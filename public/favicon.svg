@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Nills Mart">
+  <rect width="64" height="64" rx="8" fill="#2d346a"/>
+  <path fill="#fff" d="M34 18 L48 42 L42 42 L34 28 L26 42 L20 42 Z"/>
+  <path fill="#63a4a6" d="M26 42 L34 28 L42 42 L48 42 L42 52 L34 38 L26 52 L20 52 L26 42 Z" opacity="0.95"/>
+</svg>

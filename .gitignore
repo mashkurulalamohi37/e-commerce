@@ -1,0 +1,50 @@
+# Secrets — never commit real credentials. Track .env.example instead.
+.env
+.env.*
+!.env.example
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+deploy-cpanel
+nills_mart-cpanel.zip
+.output
+.vinxi
+.tanstack/**
+.nitro
+*.local
+
+# Wrangler / Cloudflare
+.wrangler/
+.dev.vars
+
+# Python & SQLite
+__pycache__/
+*.pyc
+venv/
+.venv/
+backend/venv/
+backend/.venv/
+*.sqlite3
+*.db
+backend/*.db
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

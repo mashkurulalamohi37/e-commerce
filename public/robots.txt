@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Account and order pages carry personal data and have no search value.
+Disallow: /admin
+Disallow: /checkout
+Disallow: /track
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: /sitemap.xml
