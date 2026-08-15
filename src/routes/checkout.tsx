@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
@@ -56,6 +56,9 @@ function Checkout() {
   const [promoError, setPromoError] = useState<string | undefined>();
   const [checkingPromo, setCheckingPromo] = useState(false);
   const [busy, setBusy] = useState(false);
+  // Identifies this checkout attempt to the API so a retry cannot become a
+  // second order. Reset only once an order is successfully placed.
+  const idempotencyKey = useRef(crypto.randomUUID());
 
   const applyPromo = async () => {
     setCheckingPromo(true);
@@ -101,14 +104,14 @@ function Checkout() {
 
   if (loading) {
     return (
-      <p className="px-4 py-16 text-center text-sm text-muted-foreground">Loading your bag…</p>
+      <p className="px-4 py-16 text-center text-sm text-muted-foreground">Loading your cart…</p>
     );
   }
 
   if (lines.length === 0) {
     return (
       <div className="mx-auto max-w-md px-4 py-16 text-center">
-        <h1 className="font-display text-2xl font-semibold">Your bag is empty</h1>
+        <h1 className="font-display text-2xl font-semibold">Your cart is empty</h1>
         <Button asChild className="mt-6">
           <Link to="/offers">Shop the offers</Link>
         </Button>
@@ -138,13 +141,16 @@ function Checkout() {
 
       // The server re-checks stock and recomputes every figure; whatever the
       // browser believed about prices is irrelevant by this point.
-      const order = await placeOrder({
-        ...form,
-        deliveryZone: zone,
-        paymentMethod: method,
-        promoCode: promoCode.trim() || undefined,
-        items: lines.map((l) => ({ productId: l.product.id, qty: l.qty })),
-      });
+      const order = await placeOrder(
+        {
+          ...form,
+          deliveryZone: zone,
+          paymentMethod: method,
+          promoCode: promoCode.trim() || undefined,
+          items: lines.map((l) => ({ productId: l.product.id, qty: l.qty })),
+        },
+        idempotencyKey.current,
+      );
 
       rememberOrderPhone(order.order_number, form.phone);
 

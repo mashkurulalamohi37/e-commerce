@@ -3,16 +3,16 @@ import secrets
 import string
 from typing import Any, List, Optional
 import uuid
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, and_
+from sqlalchemy import select, update
 from sqlalchemy.orm import selectinload
 
+from app.api.v1.endpoints.reviews import find_live_promotion, promo_discount
 from app.core.config import settings
 from app.db.session import get_db
-from app.models.order import Order, OrderItem
+from app.models.order import Order, OrderIdempotency, OrderItem
 from app.models.product import Product
-from app.models.review import Promotion
 from app.schemas.order import OrderCreate, OrderResponse, OrderStatusUpdate, PaymentConfirm
 from app.models.user import User
 from app.api.v1.endpoints.auth import (
@@ -56,14 +56,96 @@ def _same_phone(a: Optional[str], b: Optional[str]) -> bool:
     return bool(left) and secrets.compare_digest(left, right)
 
 
+# Statuses that no longer hold inventory.
+RELEASED_STATUSES = {"cancelled"}
+
+
+def _wanted_from_items(items) -> dict:
+    wanted: dict[uuid.UUID, int] = {}
+    for item in items:
+        if item.product_id:
+            wanted[item.product_id] = wanted.get(item.product_id, 0) + item.qty
+    return wanted
+
+
+async def _reserve_stock(db: AsyncSession, wanted: dict) -> None:
+    """Take the requested quantities out of stock, or raise 409.
+
+    Stock used to move only when `/pay` ran. Checkout deliberately skips that
+    call for cash on delivery — the dominant payment method here — so COD orders
+    never touched inventory and the store could sell the same five units
+    indefinitely. Reserving at order creation makes every sale cost stock
+    exactly once, whoever pays and however.
+
+    The decrement is a single conditional UPDATE rather than a read, a subtract
+    in Python and a write back. Two shoppers racing for the last unit both read
+    the same starting figure, so the read-modify-write version sold it twice;
+    letting the database do the arithmetic under `stock >= qty` means exactly one
+    of them matches a row. `with_for_update()` would not have covered this —
+    SQLite ignores it.
+    """
+    names = {
+        p.id: p.name
+        for p in (
+            await db.execute(select(Product).where(Product.id.in_(list(wanted))))
+        ).scalars().all()
+    }
+    missing = [str(pid) for pid in wanted if pid not in names]
+    if missing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Unknown product(s): {', '.join(missing)}",
+        )
+
+    # Stable order so two concurrent multi-item orders cannot deadlock.
+    for pid in sorted(wanted, key=str):
+        qty = wanted[pid]
+        result = await db.execute(
+            update(Product)
+            .where(Product.id == pid, Product.stock >= qty)
+            .values(stock=Product.stock - qty)
+        )
+        if result.rowcount == 0:
+            left = (
+                await db.execute(select(Product.stock).where(Product.id == pid))
+            ).scalar_one_or_none()
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"Insufficient stock: {names[pid]} (only {left or 0} left)",
+            )
+
+
+async def _release_stock(db: AsyncSession, wanted: dict) -> None:
+    """Put reserved quantities back, e.g. when an order is cancelled."""
+    for pid in sorted(wanted, key=str):
+        await db.execute(
+            update(Product).where(Product.id == pid).values(stock=Product.stock + wanted[pid])
+        )
+
+
 @router.post("/", response_model=OrderResponse)
 async def create_order(
     order_in: OrderCreate,
     db: AsyncSession = Depends(get_db),
     current_user: Optional[User] = Depends(get_optional_current_user),
+    idempotency_key: Optional[str] = Header(default=None, alias="Idempotency-Key", max_length=120),
 ) -> Any:
     if not order_in.items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Order must contain at least one item")
+
+    # A retry of the same checkout attempt returns the order it already made,
+    # instead of placing a second one with its own stock reservation.
+    if idempotency_key:
+        seen = (
+            await db.execute(
+                select(Order)
+                .options(selectinload(Order.items))
+                .join(OrderIdempotency, OrderIdempotency.order_id == Order.id)
+                .where(OrderIdempotency.key == idempotency_key)
+            )
+        ).scalars().first()
+        if seen:
+            return seen
 
     # Every price comes from the database. The request body carries only
     # product_id and qty — a client-supplied unit_price would let the buyer
@@ -89,17 +171,6 @@ async def create_order(
             detail=f"Product unavailable: {', '.join(unavailable)}",
         )
 
-    short = [
-        f"{products[pid].name} (only {products[pid].stock} left)"
-        for pid, qty in requested.items()
-        if products[pid].stock < qty
-    ]
-    if short:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail=f"Insufficient stock: {', '.join(short)}",
-        )
-
     subtotal = sum(products[pid].price * qty for pid, qty in requested.items())
 
     if order_in.delivery_zone == "inside_dhaka":
@@ -109,19 +180,26 @@ async def create_order(
 
     discount_amount = 0.0
     if order_in.promo_code:
-        promo_res = await db.execute(
-            select(Promotion).where(Promotion.code == order_in.promo_code, Promotion.is_active == True)
-        )
-        promo = promo_res.scalars().first()
-        if promo and subtotal >= promo.min_order_amount:
-            if promo.discount_type == "percentage":
-                discount_amount = (subtotal * promo.discount_value) / 100.0
-            else:
-                discount_amount = promo.discount_value
-            # Never discount below zero, and never discount the delivery fee away.
-            discount_amount = min(discount_amount, subtotal)
+        # A code that cannot be applied is an error, not a silent no-op. It used
+        # to fall through to a zero discount, so an order placed with a code that
+        # had just expired charged full price without saying so — after the
+        # checkout page had already quoted the discounted total.
+        promo = await find_live_promotion(db, order_in.promo_code)
+        if not promo:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Promo code '{order_in.promo_code}' is not valid or has expired.",
+            )
+        if subtotal < promo.min_order_amount:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Code '{promo.code}' needs a minimum order of {promo.min_order_amount:g} BDT.",
+            )
+        discount_amount = promo_discount(promo, subtotal)
 
     total = max(0.0, subtotal + delivery_fee - discount_amount)
+
+    await _reserve_stock(db, requested)
 
     db_order = Order(
         order_number=generate_order_number(),
@@ -157,6 +235,9 @@ async def create_order(
                 unit_price=product.price,
             )
         )
+
+    if idempotency_key:
+        db.add(OrderIdempotency(key=idempotency_key, order_id=db_order.id))
 
     await db.commit()
 
@@ -194,39 +275,18 @@ async def confirm_payment(
         )
 
     if order.payment_status == "paid":
-        return order  # idempotent: a retried confirmation must not decrement twice
+        return order  # idempotent: a retried confirmation must not be charged twice
 
-    # Lock the product rows in a stable order so concurrent checkouts queue
-    # rather than deadlock, then re-check stock inside the same transaction.
-    product_ids = sorted({item.product_id for item in order.items if item.product_id})
-    products_result = await db.execute(
-        select(Product).where(Product.id.in_(product_ids)).order_by(Product.id).with_for_update()
-    )
-    products = {p.id: p for p in products_result.scalars().all()}
-
-    wanted: dict[uuid.UUID, int] = {}
-    for item in order.items:
-        if item.product_id:
-            wanted[item.product_id] = wanted.get(item.product_id, 0) + item.qty
-
-    sold_out = [
-        products[pid].name
-        for pid, qty in wanted.items()
-        if pid not in products or products[pid].stock < qty
-    ]
-    if sold_out:
-        order.payment_status = "unpaid"
-        db.add(order)
-        await db.commit()
+    if order.status in RELEASED_STATUSES:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"{', '.join(sold_out)} just sold out — you have not been charged.",
+            detail="This order was cancelled and cannot be paid for.",
         )
 
-    for pid, qty in wanted.items():
-        products[pid].stock -= qty
-        db.add(products[pid])
-
+    # No stock movement here any more. The units were taken out of stock when the
+    # order was created, so this endpoint only records that the money arrived —
+    # which also means a bKash order confirmed by an admin and a card order
+    # confirmed by the customer cost inventory the same way.
     order.payment_status = "paid"
     order.status = "processing"
     order.payment_reference = payload.payment_reference or f"SIM-{uuid.uuid4().hex[:8].upper()}"
@@ -243,13 +303,22 @@ async def confirm_payment(
 async def track_order(
     order_number: str, phone: str, db: AsyncSession = Depends(get_db)
 ) -> Any:
+    """Look an order up by number plus the phone it was placed with.
+
+    The phone comparison used to be raw string equality while `/pay` normalised
+    the same field, so a customer whose contacts store the number as
+    +8801712345678 could confirm a payment but could not then find the order.
+    Both paths now go through _same_phone.
+    """
     result = await db.execute(
         select(Order)
         .options(selectinload(Order.items))
-        .where(and_(Order.order_number == order_number, Order.phone == phone))
+        .where(Order.order_number == order_number.strip().upper())
     )
     order = result.scalars().first()
-    if not order:
+    # Constant-time comparison, and the same 404 whether the number is unknown
+    # or the phone does not match — so this cannot confirm an order exists.
+    if not order or not _same_phone(phone, order.phone):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found with provided credentials")
     return order
 
@@ -308,8 +377,19 @@ async def update_order_status(
     if not order:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
 
-    if status_in.status:
+    if status_in.status and status_in.status != order.status:
+        was_holding = order.status not in RELEASED_STATUSES
+        now_holding = status_in.status not in RELEASED_STATUSES
+        wanted = _wanted_from_items(order.items)
+        # Cancelling an order has to put its units back on the shelf, and
+        # un-cancelling has to take them again — otherwise the stock a cancelled
+        # order was holding stayed invisible forever.
+        if was_holding and not now_holding:
+            await _release_stock(db, wanted)
+        elif now_holding and not was_holding:
+            await _reserve_stock(db, wanted)
         order.status = status_in.status
+
     if status_in.payment_status:
         order.payment_status = status_in.payment_status
     if status_in.payment_reference:

@@ -1,6 +1,6 @@
-import { Link } from "@tanstack/react-router";
 import type { Banner } from "@/lib/banner-queries";
 import { BannerImage } from "./BannerImage";
+import { BannerLink } from "./BannerLink";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,9 +23,9 @@ export function OfferTiles({ slides }: { slides: Banner[] }) {
   return (
     <div className={cn("grid gap-3 px-4 sm:gap-4 sm:px-6 lg:gap-5", gridColsClass)}>
       {displaySlides.map((slide) => (
-        <Link
+        <BannerLink
           key={slide.id}
-          to={(slide.ctaHref || "/offers") as "/offers"}
+          href={slide.ctaHref}
           className="wave-tile block transition-transform hover:-translate-y-0.5"
         >
           <BannerImage
@@ -35,7 +35,7 @@ export function OfferTiles({ slides }: { slides: Banner[] }) {
             height={800}
             className="aspect-square w-full"
           />
-        </Link>
+        </BannerLink>
       ))}
     </div>
   );

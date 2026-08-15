@@ -7,8 +7,9 @@ from sqlalchemy import select, or_, func, String
 from app.db.session import get_db
 from app.models.category import Brand
 from app.models.product import Product
+from app.models.user import User
 from app.schemas.product import ProductCreate, ProductResponse, ProductUpdate
-from app.api.v1.endpoints.auth import get_current_admin
+from app.api.v1.endpoints.auth import get_current_admin, get_optional_current_user
 
 router = APIRouter()
 
@@ -21,14 +22,24 @@ async def list_products(
     search: Optional[str] = None,
     on_offer: Optional[bool] = None,
     best_seller: Optional[bool] = None,
-    skip: int = 0,
-    limit: int = 50,
+    # Unbounded page size and negative offsets both reached the query untouched.
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
 ) -> Any:
     query = select(Product).where(Product.published == True)
 
     if category:
-        # Cross-DB compatible category filter in JSON array
-        query = query.where(Product.categories.cast(String).ilike(f'%"{category}"%'))
+        # Cross-DB compatible category filter in JSON array.
+        #
+        # Products store display names ("Skin Care") while the storefront routes
+        # on slugs ("skin-care"). Comparing them raw only worked for
+        # single-word categories — "makeup" matched "Makeup" case-insensitively,
+        # but "skin-care" never matched "Skin Care", so every multi-word
+        # department returned an empty page. Normalise both sides: lower-case
+        # and turn spaces into hyphens before comparing.
+        normalised = func.replace(func.lower(Product.categories.cast(String)), " ", "-")
+        needle = f'%"{category.strip().lower().replace(" ", "-")}"%'
+        query = query.where(normalised.like(needle))
 
     if brand:
         query = query.where(Product.brand_slug == brand)
@@ -64,8 +75,8 @@ async def list_products(
 @router.get("/admin/list", response_model=List[ProductResponse], dependencies=[Depends(get_current_admin)])
 async def list_admin_products(
     db: AsyncSession = Depends(get_db),
-    skip: int = 0,
-    limit: int = 200,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=200, ge=1, le=500),
 ) -> Any:
     """Every product, published or not.
 
@@ -78,10 +89,22 @@ async def list_admin_products(
 
 
 @router.get("/by-slug/{slug}", response_model=ProductResponse)
-async def get_product_by_slug(slug: str, db: AsyncSession = Depends(get_db)) -> Any:
+async def get_product_by_slug(
+    slug: str,
+    db: AsyncSession = Depends(get_db),
+    viewer: Optional[User] = Depends(get_optional_current_user),
+) -> Any:
+    """Public product lookup, with an admin preview.
+
+    The list endpoint filtered on `published` and this one did not, so a draft
+    product — unreleased pricing, an unannounced launch — was readable by anyone
+    who knew or guessed the slug. Admins keep the preview so an unpublished
+    product can still be checked before it goes live.
+    """
     result = await db.execute(select(Product).where(Product.slug == slug))
     product = result.scalars().first()
-    if not product:
+    is_admin = viewer is not None and viewer.role == "admin"
+    if not product or (not product.published and not is_admin):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")
     return product
 

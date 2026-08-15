@@ -1,7 +1,10 @@
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import {
+  GRID_PAGE_SIZE,
+  LoadMore,
   ProductGridSkeleton,
   ProductsEmptyState,
   ProductsErrorState,
@@ -62,15 +65,51 @@ function CategoryPage() {
   const inSub = sub
     ? (data ?? []).filter((p) => {
         const needle = sub.toLowerCase();
+        const cats = p.categories.map((c) => c.toLowerCase());
+        const name = p.name.toLowerCase();
+        const brief = p.brief.toLowerCase();
+        const concerns = p.concerns.map((c) => c.toLowerCase());
+
+        // 1. Direct or partial match in product categories list
+        if (cats.some((c) => c === needle || c.includes(needle) || needle.includes(c))) {
+          return true;
+        }
+
+        // 2. Smart synonym and keyword matching
+        if (needle.includes("facewash") || needle.includes("cleans")) {
+          if (
+            cats.some((c) => c.includes("facewash") || c.includes("cleans")) ||
+            name.includes("cleanser") ||
+            name.includes("wash") ||
+            brief.includes("cleans")
+          ) {
+            return true;
+          }
+        }
+
+        if (needle.includes("scrub") || needle.includes("exfoliat")) {
+          if (
+            cats.some((c) => c.includes("scrub") || c.includes("exfoliat")) ||
+            name.includes("scrub") ||
+            brief.includes("exfoliat")
+          ) {
+            return true;
+          }
+        }
+
+        // 3. Fallback search across product name, brief, and concerns
         return (
-          p.name.toLowerCase().includes(needle) ||
-          p.brief.toLowerCase().includes(needle) ||
-          p.concerns.some((c) => c.toLowerCase().includes(needle))
+          name.includes(needle) ||
+          brief.includes(needle) ||
+          concerns.some((c) => c.includes(needle))
         );
       })
     : (data ?? []);
 
   const items = sortProducts(inSub, sort);
+
+  const [shown, setShown] = useState(GRID_PAGE_SIZE);
+  useEffect(() => setShown(GRID_PAGE_SIZE), [slug, sub, sort]);
 
   const setSub = (next?: string) =>
     navigate({ search: (prev) => ({ ...prev, sub: next }), replace: true });
@@ -131,10 +170,15 @@ function CategoryPage() {
             onChange={(v) => navigate({ search: (prev) => ({ ...prev, sort: v }), replace: true })}
           />
           <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-            {items.map((p) => (
+            {items.slice(0, shown).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
+          <LoadMore
+            shown={Math.min(shown, items.length)}
+            total={items.length}
+            onMore={() => setShown((s) => s + GRID_PAGE_SIZE)}
+          />
         </>
       ) : (
         // Was a single grey sentence with nothing to click, while search got the

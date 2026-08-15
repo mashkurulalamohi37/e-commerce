@@ -1,7 +1,7 @@
 import useEmblaCarousel from "embla-carousel-react";
-import { Link } from "@tanstack/react-router";
 import type { Banner } from "@/lib/banner-queries";
 import { BannerImage } from "./BannerImage";
+import { BannerLink } from "./BannerLink";
 import { cn } from "@/lib/utils";
 
 /**
@@ -33,10 +33,7 @@ export function OfferCarousel({ slides }: { slides: Banner[] }) {
             aria-label={`${i + 1} of ${slides.length}`}
             className="min-w-0 flex-[0_0_82%] sm:flex-[0_0_48%] lg:flex-[0_0_32%]"
           >
-            <Link
-              to={(slide.ctaHref || "/offers") as "/offers"}
-              className="relative block overflow-hidden rounded-xl"
-            >
+            <BannerLink href={slide.ctaHref} className="relative block overflow-hidden rounded-xl">
               <BannerImage
                 src={slide.imageUrl}
                 alt={slide.alt}
@@ -62,7 +59,7 @@ export function OfferCarousel({ slides }: { slides: Banner[] }) {
                   <span className="text-[11px] opacity-90">{slide.subtitle}</span>
                 ) : null}
               </div>
-            </Link>
+            </BannerLink>
           </div>
         ))}
       </div>

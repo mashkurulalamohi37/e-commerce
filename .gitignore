@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.cpanel.example
 
 # Logs
 logs
@@ -17,6 +18,9 @@ dist
 dist-ssr
 deploy-cpanel
 nills_mart-cpanel.zip
+*.zip
+*.tar.gz
+*.gz
 .output
 .vinxi
 .tanstack/**
@@ -26,6 +30,11 @@ nills_mart-cpanel.zip
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+
+# Admin-uploaded media. Runtime data, not source — and the test suite writes
+# into the same directory, so test artifacts were being committed too.
+backend/uploads/*
+!backend/uploads/.gitkeep
 
 # Python & SQLite
 __pycache__/

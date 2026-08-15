@@ -90,6 +90,38 @@ export function ProductsEmptyState({
   );
 }
 
+/** How many products a grid shows before the shopper asks for more. */
+export const GRID_PAGE_SIZE = 24;
+
+/**
+ * Grids rendered every result at once — fine at a few dozen products, slow and
+ * unscannable past that. Callers slice to `shown` and render this underneath.
+ */
+export function LoadMore({
+  shown,
+  total,
+  noun = "products",
+  onMore,
+}: {
+  shown: number;
+  total: number;
+  noun?: string;
+  onMore: () => void;
+}) {
+  if (shown >= total) return null;
+
+  return (
+    <div className="mt-6 flex flex-col items-center gap-2">
+      <p className="text-xs text-muted-foreground tabular-nums" aria-live="polite">
+        Showing {shown} of {total} {noun}
+      </p>
+      <Button variant="outline" onClick={onMore}>
+        Load more
+      </Button>
+    </div>
+  );
+}
+
 export function ProductsErrorState({ onRetry }: { onRetry: () => void }) {
   return (
     <div

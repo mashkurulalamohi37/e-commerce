@@ -1,7 +1,17 @@
-from typing import Optional, List
+from typing import Literal, Optional, List
 from uuid import UUID
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field
+
+from app.core.text import BdPhone, PromoCode, SafeText
+
+# The lifecycle the storefront's tracking page draws, plus the terminal state.
+# Free-text status let an admin save "totally-made-up", which the tracker then
+# rendered as four grey segments with no current step and no error.
+OrderStatus = Literal["pending", "processing", "shipped", "delivered", "cancelled"]
+PaymentStatus = Literal["unpaid", "pending", "paid", "refunded"]
+PaymentMethod = Literal["cod", "bkash", "nagad", "card"]
+DeliveryZone = Literal["inside_dhaka", "outside_dhaka"]
 
 
 class OrderItemCreate(BaseModel):
@@ -31,28 +41,38 @@ class OrderItemResponse(BaseModel):
 
 
 class OrderCreate(BaseModel):
-    customer_name: str
-    phone: str
-    address: str
-    city: str = "Dhaka"
-    delivery_zone: str = "inside_dhaka"
-    payment_method: str = "cod"
-    payment_reference: Optional[str] = None
-    items: List[OrderItemCreate]
-    promo_code: Optional[str] = None
+    """Mirrors the rules the checkout form applies in the browser.
+
+    The form validated all four contact fields well and none of it existed
+    server-side, so anything that skipped the form could create an order with a
+    blank name, phone and address — undeliverable, and untrackable, because
+    tracking needs the phone.
+    """
+
+    customer_name: SafeText = Field(min_length=2, max_length=120)
+    phone: BdPhone
+    address: SafeText = Field(min_length=5, max_length=400)
+    city: SafeText = Field(default="Dhaka", min_length=2, max_length=80)
+    delivery_zone: DeliveryZone = "inside_dhaka"
+    payment_method: PaymentMethod = "cod"
+    payment_reference: Optional[SafeText] = Field(default=None, max_length=60)
+    # Bounded, but an empty list is left to the endpoint so it can answer with
+    # the friendlier 400 it already had rather than a schema 422.
+    items: List[OrderItemCreate] = Field(max_length=50)
+    promo_code: Optional[PromoCode] = None
 
 
 class PaymentConfirm(BaseModel):
     """Proof the caller placed this order — the order id alone is not enough."""
 
     phone: Optional[str] = Field(default=None, max_length=20)
-    payment_reference: Optional[str] = Field(default=None, max_length=60)
+    payment_reference: Optional[SafeText] = Field(default=None, max_length=60)
 
 
 class OrderStatusUpdate(BaseModel):
-    status: Optional[str] = None
-    payment_status: Optional[str] = None
-    payment_reference: Optional[str] = None
+    status: Optional[OrderStatus] = None
+    payment_status: Optional[PaymentStatus] = None
+    payment_reference: Optional[SafeText] = Field(default=None, max_length=60)
 
 
 class OrderResponse(BaseModel):

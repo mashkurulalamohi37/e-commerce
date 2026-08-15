@@ -1,7 +1,18 @@
 /**
  * Utility to trigger browser CSV download for admin records (orders, inventory, etc.)
  */
-export function exportToCSV(filename: string, rows: Record<string, any>[]) {
+
+/**
+ * Spreadsheets treat a leading =, +, - or @ as the start of a formula, so a
+ * customer name of `=HYPERLINK(...)` runs when the admin opens the export.
+ * Prefixing with an apostrophe makes the cell literal text; Excel and Sheets
+ * both strip it on display.
+ */
+function neutraliseFormula(value: string): string {
+  return /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+}
+
+export function exportToCSV(filename: string, rows: Record<string, unknown>[]) {
   if (!rows || !rows.length) return;
 
   const headers = Object.keys(rows[0]);
@@ -10,9 +21,8 @@ export function exportToCSV(filename: string, rows: Record<string, any>[]) {
     ...rows.map((row) =>
       headers
         .map((header) => {
-          const val = row[header];
-          const escaped = String(val ?? "").replace(/"/g, '""');
-          return `"${escaped}"`;
+          const escaped = String(row[header] ?? "").replace(/"/g, '""');
+          return `"${neutraliseFormula(escaped)}"`;
         })
         .join(","),
     ),
@@ -26,4 +36,6 @@ export function exportToCSV(filename: string, rows: Record<string, any>[]) {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  // The blob stays in memory for the life of the document otherwise.
+  URL.revokeObjectURL(url);
 }

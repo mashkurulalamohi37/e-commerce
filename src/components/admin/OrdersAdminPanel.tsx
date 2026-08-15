@@ -11,6 +11,7 @@ import {
   MapPin,
   Search,
   Download,
+  type LucideIcon,
 } from "lucide-react";
 import { apiFetch } from "@/lib/api-client";
 import { taka } from "@/lib/catalog";
@@ -55,7 +56,7 @@ export interface OrderRecord {
 }
 
 /** Semantic tokens rather than raw palette values, so these follow the theme. */
-const statusBadges: Record<string, { label: string; bg: string; icon: any }> = {
+const statusBadges: Record<string, { label: string; bg: string; icon: LucideIcon }> = {
   pending: {
     label: "Pending",
     bg: "bg-warning-surface text-warning border-warning/30",
@@ -109,7 +110,7 @@ export function OrdersAdminPanel() {
       toast.success("Order status updated!");
       queryClient.invalidateQueries({ queryKey: ["admin", "orders"] });
     },
-    onError: (err: any) => toast.error(err.message || "Failed to update order status"),
+    onError: (err: Error) => toast.error(err.message || "Failed to update order status"),
   });
 
   const filteredOrders = orders.filter((o) => {

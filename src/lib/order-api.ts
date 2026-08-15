@@ -50,9 +50,13 @@ export type PlaceOrderInput = {
  * looks up prices, checks stock and computes the total, so the amount charged
  * cannot be influenced from the browser.
  */
-export function placeOrder(input: PlaceOrderInput): Promise<OrderRecord> {
+export function placeOrder(input: PlaceOrderInput, idempotencyKey?: string): Promise<OrderRecord> {
   return apiFetch<OrderRecord>("/orders/", {
     method: "POST",
+    // One key per checkout attempt. A double-click, or a retry after the
+    // connection dropped mid-request, used to place a second real order with
+    // its own stock reservation and its own delivery.
+    headers: idempotencyKey ? { "Idempotency-Key": idempotencyKey } : undefined,
     body: JSON.stringify({
       customer_name: input.customerName.trim(),
       phone: input.phone.trim(),

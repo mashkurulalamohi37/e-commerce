@@ -5,6 +5,8 @@ import { ProductCard } from "@/components/storefront/ProductCard";
 import { Input } from "@/components/ui/input";
 import { searchQueryOptions } from "@/lib/product-queries";
 import {
+  GRID_PAGE_SIZE,
+  LoadMore,
   ProductGridSkeleton,
   ProductsEmptyState,
   ProductsErrorState,
@@ -70,6 +72,11 @@ function SearchPage() {
   const { data, isPending, isError, isFetching, refetch } = useQuery(searchQueryOptions(q));
   const results = sortProducts(data ?? [], sort);
 
+  // Reset the window whenever the query or the order changes, so a new search
+  // doesn't open already scrolled several pages deep.
+  const [shown, setShown] = useState(GRID_PAGE_SIZE);
+  useEffect(() => setShown(GRID_PAGE_SIZE), [q, sort]);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
       <h1 className="font-display text-2xl font-semibold">Search</h1>
@@ -113,10 +120,15 @@ function SearchPage() {
               isFetching ? "opacity-60" : "opacity-100"
             }`}
           >
-            {results.map((p) => (
+            {results.slice(0, shown).map((p) => (
               <ProductCard key={p.id} product={p} />
             ))}
           </div>
+          <LoadMore
+            shown={Math.min(shown, results.length)}
+            total={results.length}
+            onMore={() => setShown((s) => s + GRID_PAGE_SIZE)}
+          />
         </>
       )}
     </div>

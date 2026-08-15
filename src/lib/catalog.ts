@@ -38,48 +38,34 @@ export type Product = {
 export type Brand = { slug: string; name: string; top?: boolean; origin: string };
 
 export const brands: Brand[] = [
-  { slug: "radiant-skin-co", name: "Radiant Skin Co.", top: true, origin: "Korea" },
-  { slug: "noorja-beauty-lab", name: "Noorja Beauty Lab", top: true, origin: "Bangladesh" },
-  { slug: "aurelia-botanics", name: "Aurelia Botanics", top: true, origin: "France" },
-  { slug: "hikari-derm", name: "Hikari Derm", top: true, origin: "Japan" },
-  { slug: "meraki-colour", name: "Meraki Colour", top: true, origin: "Italy" },
-  { slug: "tulsi-roots", name: "Tulsi & Roots", origin: "India" },
-  { slug: "coastline-care", name: "Coastline Care", origin: "Thailand" },
-  { slug: "atelier-nine", name: "Atelier Nine", origin: "UK" },
-  { slug: "bloom-baby", name: "Bloom Baby", origin: "Bangladesh" },
-  { slug: "north-mens-co", name: "North Men's Co.", origin: "USA" },
+  { slug: "galenia-skin-care", name: "Galenia Skin Care", top: true, origin: "Italy" },
+  { slug: "swiss-formula", name: "Swiss Formula", top: true, origin: "Switzerland" },
+  { slug: "lipiol", name: "Lipiol Derm", top: true, origin: "Italy" },
+  { slug: "sebotic", name: "Sebotic Care", top: true, origin: "Italy" },
+  { slug: "keralise", name: "Keralise Lab", top: true, origin: "Italy" },
+  { slug: "lenus", name: "Lenus Body", origin: "Italy" },
+  { slug: "micoxil", name: "Micoxil Active", origin: "Italy" },
+  { slug: "protelion", name: "Protelion Sun", origin: "Italy" },
 ];
 
 export const categories = [
   {
     slug: "skin-care",
     name: "Skin Care",
-    children: ["Facewash", "Toner", "Moisturizer", "Masks & Peels", "Scrubs & Exfoliators"],
+    children: ["Facewash", "Moisturizer", "Serum", "Sunscreen", "Scrubs & Exfoliators"],
   },
-  { slug: "makeup", name: "Makeup", children: ["Lips", "Face", "Eyes", "Nails"] },
   {
     slug: "hair-care",
     name: "Hair Care",
-    children: ["Shampoo", "Conditioner", "Hair Oil", "Serum"],
+    children: ["Shampoo", "Serum"],
   },
-  { slug: "body-care", name: "Body Care", children: ["Body Wash", "Lotion", "Hand Care"] },
-  { slug: "fragrance", name: "Fragrance", children: ["Perfume", "Body Mist", "Attar"] },
-  { slug: "baby-care", name: "Baby Care", children: ["Bath", "Lotion", "Diapering"] },
-  { slug: "men-care", name: "Men Care", children: ["Shaving", "Face Care", "Hair"] },
-  { slug: "jewellery", name: "Jewellery", children: ["Earrings", "Necklace", "Rings"] },
-  { slug: "accessories", name: "Accessories", children: ["Brushes", "Tools", "Bags"] },
-  { slug: "daily-needs", name: "Daily Needs", children: ["Oral Care", "Hygiene", "Tissue"] },
+  {
+    slug: "body-care",
+    name: "Body Care",
+    children: ["Lotion"],
+  },
 ];
 
-/**
- * The single list of shoppable concerns.
- *
- * The home page tiles and this list used to be two separate arrays with only
- * two entries in common, both rendered under the heading "Shop by Concern" —
- * so a concern seen on the home page appeared to have been removed when the
- * shopper looked for it on /categories. `query` is what gets searched; `sub`
- * is the qualifier shown on the home tiles.
- */
 export type Concern = { title: string; sub: string; query: string };
 
 export const concerns: Concern[] = [
@@ -97,10 +83,6 @@ export const concerns: Concern[] = [
 
 const img = { serum, cream, lipstick, hair };
 
-/**
- * Stand-in artwork for products whose image_url is not set yet.
- * Deterministic, so a given product always gets the same placeholder.
- */
 export function fallbackImageFor(slug: string): string {
   const pool = [serum, cream, lipstick, hair];
   let hash = 0;
@@ -108,145 +90,232 @@ export function fallbackImageFor(slug: string): string {
   return pool[hash % pool.length];
 }
 
-type Seed = [
-  string,
-  string,
-  keyof typeof img,
-  string,
-  number,
-  number,
-  number,
-  string[],
-  string[],
-  boolean?,
-];
+type Seed = {
+  name: string;
+  brandSlug: string;
+  image: string;
+  size: string;
+  price: number;
+  listPrice: number;
+  stock: number;
+  categories: string[];
+  concerns: string[];
+  bestSeller?: boolean;
+  onOffer?: boolean;
+  brief: string;
+};
 
 const seeds: Seed[] = [
-  [
-    "Vitamin C Glow Serum",
-    "radiant-skin-co",
-    "serum",
-    "30 ml",
-    1450,
-    1890,
-    6,
-    ["Skin Care", "Serum"],
-    ["Dull Skin", "Pigmentation"],
-    true,
-  ],
-  [
-    "Barrier Repair Moisturizer",
-    "hikari-derm",
-    "cream",
-    "50 ml",
-    1290,
-    1690,
-    14,
-    ["Skin Care", "Moisturizer"],
-    ["Anti Aging"],
-  ],
-  [
-    "Velvet Matte Lipstick",
-    "meraki-colour",
-    "lipstick",
-    "3.8 g",
-    890,
-    1150,
-    3,
-    ["Makeup", "Lips"],
-    [],
-    true,
-  ],
-  [
-    "Rice Water Hair Duo",
-    "tulsi-roots",
-    "hair",
-    "300 ml",
-    1150,
-    1450,
-    22,
-    ["Hair Care", "Shampoo"],
-    [],
-  ],
-  [
-    "Niacinamide Oil Control Serum",
-    "noorja-beauty-lab",
-    "serum",
-    "30 ml",
-    990,
-    1250,
-    9,
-    ["Skin Care", "Serum"],
-    ["Oil Control", "Acne Treatment"],
-  ],
-  [
-    "Ceramide Night Cream",
-    "aurelia-botanics",
-    "cream",
-    "45 ml",
-    2150,
-    2690,
-    5,
-    ["Skin Care", "Moisturizer"],
-    ["Anti Aging", "Dull Skin"],
-    true,
-  ],
-  [
-    "Mineral Sunscreen SPF 50+",
-    "hikari-derm",
-    "cream",
-    "50 ml",
-    1390,
-    1590,
-    18,
-    ["Skin Care", "Sunscreen"],
-    ["Sun Protection", "Tan Removal"],
-  ],
-  [
-    "Argan Repair Hair Oil",
-    "coastline-care",
-    "hair",
-    "100 ml",
-    760,
-    950,
-    27,
-    ["Hair Care", "Hair Oil"],
-    [],
-  ],
-  [
-    "Rose Clay Purifying Mask",
-    "aurelia-botanics",
-    "cream",
-    "75 g",
-    840,
-    1090,
-    11,
-    ["Skin Care", "Masks & Peels"],
-    ["Acne Treatment", "Oil Control"],
-  ],
-  ["Satin Tint Lip Balm", "meraki-colour", "lipstick", "4 g", 650, 790, 31, ["Makeup", "Lips"], []],
-  [
-    "Gentle Foaming Facewash",
-    "noorja-beauty-lab",
-    "serum",
-    "150 ml",
-    540,
-    690,
-    40,
-    ["Skin Care", "Facewash"],
-    ["Oil Control"],
-  ],
-  [
-    "Beard & Face Grooming Oil",
-    "north-mens-co",
-    "hair",
-    "50 ml",
-    720,
-    890,
-    8,
-    ["Men Care", "Hair"],
-    [],
-  ],
+  {
+    name: "SEBOTIC PHYSIOLOGICAL SHAMPOO 200 ML",
+    brandSlug: "sebotic",
+    image: "/catalog/b5f971788a1c.jpeg",
+    size: "200 ML",
+    price: 2240,
+    listPrice: 2576,
+    stock: 15,
+    categories: ["Hair Care", "Shampoo"],
+    concerns: ["Dandruff", "Hair Fall"],
+    bestSeller: true,
+    onOffer: true,
+    brief:
+      "Daily delicate cleanser for hair and sensitive scalp providing volume and resistance. This delicate cleansing formula for daily hygiene strengthens fine, weak hair and sensitive scalp areas. Galenia S",
+  },
+  {
+    name: "MICOXIL (Antimycotic Active Cleanser) 250 ML",
+    brandSlug: "micoxil",
+    image: "/catalog/a69d82e069cb.jpeg",
+    size: "250 ML",
+    price: 2290,
+    listPrice: 2633,
+    stock: 18,
+    categories: ["Skin Care", "Facewash"],
+    concerns: [],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "Facial, body and hair cleansing adjuvant\u00a0for the preventionof superficial fungal problematics. Recommended for daily use. Suitable for those at risk of contracting cutaneous or scalp mycosis, creating",
+  },
+  {
+    name: "LIPIOL EMULSIONE (Intensive Emulsion) 250 ML",
+    brandSlug: "lipiol",
+    image: "/catalog/81ca02c166b7.jpeg",
+    size: "250 ML",
+    price: 3290,
+    listPrice: 3783,
+    stock: 21,
+    categories: ["Skin Care", "Moisturizer"],
+    concerns: ["Dry Skin"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "LIPIOL EMULSIONE (intensive emulsion) is a moisturizing lotion with elevated hydration. It is a nourishing, keratolytic, calming and protective moisturizer for the treatment of very dry, chapped and s",
+  },
+  {
+    name: "SWISS-FORMULA(Hair Serum) 0 ML",
+    brandSlug: "swiss-formula",
+    image: "/catalog/550734a359ab.jpeg",
+    size: "0 ML",
+    price: 1670,
+    listPrice: 1920,
+    stock: 24,
+    categories: ["Hair Care", "Shampoo"],
+    concerns: ["Hair Fall"],
+    bestSeller: true,
+    onOffer: true,
+    brief:
+      "Swiss Formula Hair Serum is a premium hair care solution designed to nourish, protect, and revitalize your hair. Enriched with high-quality ingredients, this lightweight serum deeply hydrates and stre",
+  },
+  {
+    name: "LENUS (Soothing Body Lotion) 150 ML",
+    brandSlug: "lenus",
+    image: "/catalog/f1ae08fbc328.jpeg",
+    size: "150 ML",
+    price: 2240,
+    listPrice: 2576,
+    stock: 27,
+    categories: ["Body Care", "Lotion"],
+    concerns: [],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "LENUS (intensive, refreshing\u00a0and soothing body lotion)\u00a0contains Polidocanol, Glycerin and Ocean Algae which are distributed in an exclusive silicon emulsion that has a pleasant energetic, long lasting",
+  },
+  {
+    name: "SWISS-FORMULA(Face Serum) 0 ML",
+    brandSlug: "swiss-formula",
+    image: "/catalog/ae315fe8276c.jpeg",
+    size: "0 ML",
+    price: 1990,
+    listPrice: 2288,
+    stock: 30,
+    categories: ["Skin Care", "Serum"],
+    concerns: ["Acne Treatment"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "Known to boost production of Collagen; the proteins present in Vitamin C Serum are known to help improve the elasticity of the skin and tighten the poresThe serum is known to help unclog the pores, re",
+  },
+  {
+    name: "LIPIOL OLIO DETERGENTE (Cleansing Oil) 40 ML",
+    brandSlug: "lipiol",
+    image: "/catalog/50bbb1e4da7b.jpeg",
+    size: "40 ML",
+    price: 3290,
+    listPrice: 3783,
+    stock: 33,
+    categories: ["Skin Care"],
+    concerns: ["Dry Skin"],
+    bestSeller: true,
+    onOffer: true,
+    brief:
+      "moisturizing, nourishing and lipid replenishing creamLIPIOL VISO (intensive facial cream) is a well-tolerated lipid replenshing, nourishing cosmetic and emollient aid based on panthenol and ceramides ",
+  },
+  {
+    name: "KERALISE (Crema Comedolytic ) 30 ML",
+    brandSlug: "keralise",
+    image: "/catalog/5e7b73c173a3.jpeg",
+    size: "30 ML",
+    price: 2240,
+    listPrice: 2576,
+    stock: 36,
+    categories: ["Skin Care"],
+    concerns: ["Acne Treatment"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "KERALISE (comedolytic cream) which exfoliates, purifies and soothes, contains Retinol that is released directly into the pilosebaceous follicles and conveyed in microspheres (liposomes). This encourag",
+  },
+  {
+    name: "SEBOTIC ANTI-DANDRUFF SHAMPOO 125 ML",
+    brandSlug: "sebotic",
+    image: "/catalog/888044895fb0.jpeg",
+    size: "125 ML",
+    price: 2240,
+    listPrice: 2576,
+    stock: 39,
+    categories: ["Hair Care", "Shampoo"],
+    concerns: ["Dandruff"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "SEBOTIC\u00a0ANTI-DANDRUFF SHAMPOO\u00a0is a complete dermocosmetic cleanser used for treating dry and greasy dandruff and intense flaky conditions of the scalp, body and beards.\u00a0 The powerful anti-dandruff syn",
+  },
+  {
+    name: "KERALISE GEL SCRUB 30 ML",
+    brandSlug: "keralise",
+    image: "/catalog/e34091000811.jpeg",
+    size: "30 ML",
+    price: 2140,
+    listPrice: 2461,
+    stock: 17,
+    categories: ["Skin Care", "Facewash"],
+    concerns: ["Acne Treatment", "Dry Skin"],
+    bestSeller: true,
+    onOffer: true,
+    brief:
+      "Triple Effect: Exfoliating, Purifying and Soothing.KERALISE GEL SCRUB is designed for daily cleansing of greasy skin inclined to acne. The dual exfoliating mechanism ensures a purifying cleanser with ",
+  },
+  {
+    name: "LIPIOL BASE (Moisturizing Cream) 500 ML",
+    brandSlug: "lipiol",
+    image: "/catalog/80d1a228b4b5.png",
+    size: "500 ML",
+    price: 3990,
+    listPrice: 4588,
+    stock: 20,
+    categories: ["Skin Care", "Moisturizer"],
+    concerns: ["Dry Skin"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "For normal, dry and extremely dry skinLIPIOL BASE is a restructuring cream, with elevated lipid content, which moisturizes for the protection of normal, dry and extremely dry skin.\u00a0 Containing functio",
+  },
+  {
+    name: "LIPIOL VISO (Intensive Facial Cream) 40 ML",
+    brandSlug: "lipiol",
+    image: "/catalog/ee400ece5be1.jpeg",
+    size: "40 ML",
+    price: 2240,
+    listPrice: 2576,
+    stock: 23,
+    categories: ["Skin Care", "Moisturizer"],
+    concerns: ["Dry Skin"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "LIPIOL VISO (intensive facial cream) is a well-tolerated lipid replenshing, nourishing cosmetic and emollient aid based on panthenol and ceramides formulated for the most demanding conditions of dryne",
+  },
+  {
+    name: "HY-SERUM--Hyaluronic-Acid 0 ML",
+    brandSlug: "galenia-skin-care",
+    image: "/catalog/2ca4c1a0a203.jpeg",
+    size: "0 ML",
+    price: 4290,
+    listPrice: 4933,
+    stock: 26,
+    categories: ["Skin Care", "Serum"],
+    concerns: [],
+    bestSeller: true,
+    onOffer: true,
+    brief:
+      "Galenia Skin Care HY Serum\u00a0is a highly concentrated hyaluronic acid facial serum designed to deliver intense hydration and anti-aging benefits. It combines hyaluronic acid with other active substances",
+  },
+  {
+    name: "PROTELION 50 EMULSION - EMULSIONE (UVB + UVA / SPF 50 for Oily & Sensitive Skin) 50 ML",
+    brandSlug: "protelion",
+    image: "/catalog/725f633d3c99.jpeg",
+    size: "50 ML",
+    price: 2140,
+    listPrice: 2461,
+    stock: 29,
+    categories: ["Skin Care", "Moisturizer"],
+    concerns: ["Dry Skin", "Sun Protection"],
+    bestSeller: false,
+    onOffer: true,
+    brief:
+      "facial sunscreen for oily and sensitive skinElevated sun protection. Containing Sweet Almond Oil and Rice Oil.\u00a0 Delicate\u00a0 on\u00a0oily and sensitive\u00a0skin,\u00a0 avoiding\u00a0 dehydration.\u00a0 Association with\u00a0 physica",
+  },
 ];
 
 const slugify = (s: string) =>
@@ -257,25 +326,25 @@ const slugify = (s: string) =>
 
 export const products: Product[] = seeds.map((s, i) => ({
   id: String(i + 1),
-  slug: slugify(s[0]),
-  name: s[0],
-  brandSlug: s[1],
-  image: img[s[2]],
-  size: s[3],
-  sku: `${s[0].slice(0, 3).toUpperCase()}-${1000 + i}`,
-  price: s[4],
-  listPrice: s[5],
-  stock: s[6],
-  categories: s[7],
-  concerns: s[8],
-  bestSeller: s[9],
-  brief: `${s[0]} from ${brands.find((b) => b.slug === s[1])?.name}. Dermatologist-tested, cruelty free and formulated for humid South Asian weather.`,
-  ingredients:
-    "Aqua, Glycerin, Niacinamide, Sodium Hyaluronate, Panthenol, Tocopherol, Citric Acid, Phenoxyethanol.",
-  howToUse:
-    "Apply a small amount to clean skin morning and night. Follow with moisturizer and sunscreen during the day.",
-  rating: 4.3 + (i % 6) / 10,
-  reviews: 18 + i * 7,
+  slug: slugify(s.name),
+  name: s.name,
+  brandSlug: s.brandSlug,
+  image: s.image,
+  size: s.size,
+  sku: `NILL-${1000 + i}`,
+  price: s.price,
+  listPrice: s.listPrice,
+  stock: s.stock,
+  categories: s.categories,
+  concerns: s.concerns,
+  bestSeller: s.bestSeller,
+  onOffer: s.onOffer,
+  published: true,
+  brief: s.brief,
+  ingredients: "Aqua, Glycerin, Panthenol, Ceramides, Tocopherol, Citric Acid, Phenoxyethanol.",
+  howToUse: "Apply a small amount to clean skin or hair morning and night as directed on package.",
+  rating: 4.4 + (i % 5) / 10,
+  reviews: 24 + i * 5,
 }));
 
 export const brandName = (slug: string) => brands.find((b) => b.slug === slug)?.name ?? slug;
@@ -285,20 +354,16 @@ export const discount = (p: Product) =>
 
 export const taka = (n: number) => `৳${n.toLocaleString("en-US")}`;
 
-// Must match DELIVERY_FEE_* in backend/app/core/config.py — the API recomputes
-// the order total from its own copy, and a mismatch would surprise the customer.
 export const DELIVERY_INSIDE_DHAKA = 79;
 export const DELIVERY_OUTSIDE_DHAKA = 119;
 
 export const categoryBySlug = (slug: string) => categories.find((c) => c.slug === slug);
 
-/** Category names the API stores for products belonging to this category slug. */
 export const categoryNames = (slug: string): string[] => {
   const cat = categoryBySlug(slug);
   return cat ? [cat.name, ...cat.children].map((n) => n.toLowerCase()) : [];
 };
 
-/** Filters an already-fetched product list; the API is the source of the list. */
 export const inCategory = (list: Product[], slug: string) => {
   const names = categoryNames(slug);
   if (!names.length) return [];

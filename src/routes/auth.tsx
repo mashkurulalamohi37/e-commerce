@@ -28,10 +28,10 @@ export const Route = createFileRoute("/auth")({
       { title: `Sign in or create an account — ${BRAND_NAME}` },
       {
         name: "description",
-        content: `Sign in or create a ${BRAND_NAME} account to track orders, save your bag and checkout faster.`,
+        content: `Sign in or create a ${BRAND_NAME} account to track orders, save your cart and checkout faster.`,
       },
       { property: "og:title", content: `Account — ${BRAND_NAME}` },
-      { property: "og:description", content: "Access your orders, saved bag and account tools." },
+      { property: "og:description", content: "Access your orders, saved cart and account tools." },
     ],
   }),
   component: AuthPage,
@@ -328,7 +328,7 @@ function AuthPage() {
       <div className="mt-6 flex items-start gap-2 rounded-xl bg-secondary/70 px-3 py-3 text-xs text-muted-foreground">
         <ShoppingBag className="mt-0.5 size-4 shrink-0 text-link" />
         <p>
-          After signing in you can track orders, save your bag across devices, and check out more
+          After signing in you can track orders, save your cart across devices, and check out more
           quickly.
         </p>
       </div>

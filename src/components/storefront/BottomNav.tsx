@@ -37,7 +37,7 @@ export function BottomNav() {
         <li className="flex-1">
           <button
             onClick={() => setOpen(true)}
-            aria-label={`Your bag, ${count} ${count === 1 ? "item" : "items"}`}
+            aria-label={`Your cart, ${count} ${count === 1 ? "item" : "items"}`}
             className="flex min-h-11 w-full flex-col items-center gap-1 py-2 text-[11px] text-muted-foreground"
           >
             <span className="relative">

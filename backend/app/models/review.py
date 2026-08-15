@@ -3,16 +3,16 @@ from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import String, Float, Integer, Boolean, DateTime, Text, ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy.dialects.postgresql import UUID
+from app.db.types import GUID
 from app.db.base_class import Base
 
 
 class Review(Base):
     __tablename__ = "reviews"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), index=True, nullable=False)
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    product_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("products.id"), index=True, nullable=False)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), index=True, nullable=True)
     author_name: Mapped[str] = mapped_column(String(255), nullable=False)
     rating: Mapped[int] = mapped_column(Integer, nullable=False)  # 1 to 5
     comment: Mapped[str] = mapped_column(Text, nullable=False)
@@ -29,9 +29,9 @@ class Review(Base):
 class Question(Base):
     __tablename__ = "questions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), index=True, nullable=False)
-    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=True)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    product_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("products.id"), index=True, nullable=False)
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(GUID(), ForeignKey("users.id"), index=True, nullable=True)
     asker_name: Mapped[str] = mapped_column(String(255), nullable=False)
     question: Mapped[str] = mapped_column(Text, nullable=False)
     answer: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
@@ -47,7 +47,7 @@ class Question(Base):
 class Promotion(Base):
     __tablename__ = "promotions"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
     code: Mapped[str] = mapped_column(String(50), unique=True, index=True, nullable=False)
     description: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     discount_type: Mapped[str] = mapped_column(String(20), default="percentage", nullable=False)  # percentage or flat
@@ -62,9 +62,9 @@ class Promotion(Base):
 class Wishlist(Base):
     __tablename__ = "wishlists"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    user_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("users.id"), index=True, nullable=False)
-    product_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), ForeignKey("products.id"), index=True, nullable=False)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("users.id"), index=True, nullable=False)
+    product_id: Mapped[uuid.UUID] = mapped_column(GUID(), ForeignKey("products.id"), index=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     user = relationship("User", back_populates="wishlists")

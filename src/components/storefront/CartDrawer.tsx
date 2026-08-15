@@ -13,15 +13,15 @@ export function CartDrawer() {
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetContent side="right" className="flex w-full flex-col sm:max-w-sm">
         <SheetHeader>
-          <SheetTitle className="font-display tracking-wide">Your bag</SheetTitle>
+          <SheetTitle className="font-display tracking-wide">Your cart</SheetTitle>
         </SheetHeader>
 
         <div className="flex-1 space-y-3 overflow-y-auto px-4">
           {loading && (
-            <p className="py-10 text-center text-sm text-muted-foreground">Loading your bag…</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">Loading your cart…</p>
           )}
           {!loading && lines.length === 0 && (
-            <p className="py-10 text-center text-sm text-muted-foreground">Your bag is empty.</p>
+            <p className="py-10 text-center text-sm text-muted-foreground">Your cart is empty.</p>
           )}
           {lines.map(({ product, qty }) => (
             <div

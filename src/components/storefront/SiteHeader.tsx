@@ -46,7 +46,7 @@ export function SiteHeader() {
   };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/95 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-4 sm:px-6 md:h-20">
         {!isAdminRoute && (
           <Sheet>
@@ -112,7 +112,7 @@ export function SiteHeader() {
           {isAdminRoute && (
             <span className="hidden items-center gap-1 rounded-full bg-primary/20 px-3 py-1 text-xs font-extrabold uppercase tracking-wider text-link sm:inline-flex">
               <ShieldCheck className="size-3.5" />
-              Admin Console
+              Admin console
             </span>
           )}
         </div>
@@ -126,7 +126,7 @@ export function SiteHeader() {
                 className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card/80 px-3.5 py-1.5 text-xs font-bold text-foreground transition-all hover:bg-accent hover:shadow-sm"
               >
                 <Store className="size-4 text-link" />
-                <span>View Storefront</span>
+                <span>View storefront</span>
               </Link>
               {user && (
                 <DropdownMenu>
@@ -151,8 +151,6 @@ export function SiteHeader() {
             </>
           ) : (
             <>
-              {/* Search used to be an icon that navigated to a separate page
-                  before you could type a character. */}
               <form
                 role="search"
                 onSubmit={runSearch}
@@ -192,9 +190,6 @@ export function SiteHeader() {
                       {user.email}
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    {/* Was "Track an order", which sent a signed-in customer to
-                        a form asking for the order number and phone we already
-                        have on file. */}
                     <DropdownMenuItem asChild>
                       <Link to="/orders">
                         <Package className="mr-2 size-4" />
@@ -230,7 +225,7 @@ export function SiteHeader() {
 
               <button
                 onClick={() => setOpen(true)}
-                aria-label={`Your bag, ${count} ${count === 1 ? "item" : "items"}`}
+                aria-label={`Your cart, ${count} ${count === 1 ? "item" : "items"}`}
                 className="relative grid size-11 shrink-0 place-items-center rounded-md text-foreground/80 transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               >
                 <ShoppingBag className="size-5" />

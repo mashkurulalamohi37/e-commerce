@@ -3,11 +3,19 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { OfferCarousel } from "@/components/storefront/OfferCarousel";
 import { ProductGridSkeleton, ProductsEmptyState } from "@/components/storefront/ProductGridStates";
+import {
+  ProductSort,
+  isSortValue,
+  sortProducts,
+  type SortValue,
+} from "@/components/storefront/ProductSort";
 import { bannersQueryOptions, byPlacement } from "@/lib/banner-queries";
 import { productsQueryOptions } from "@/lib/product-queries";
-import { discount } from "@/lib/catalog";
 
 export const Route = createFileRoute("/offers")({
+  validateSearch: (search: Record<string, unknown>): { sort?: SortValue } => ({
+    ...(isSortValue(search.sort) ? { sort: search.sort } : {}),
+  }),
   loader: ({ context }) =>
     Promise.all([
       context.queryClient.ensureQueryData(bannersQueryOptions),
@@ -32,11 +40,15 @@ export const Route = createFileRoute("/offers")({
 });
 
 function Offers() {
+  const { sort = "discount" } = Route.useSearch();
+  const navigate = Route.useNavigate();
   const { data: banners } = useSuspenseQuery(bannersQueryOptions);
   // Only products actually flagged as on-offer. This page used to list the
   // entire catalogue, so nothing about it was "limited".
   const { data: onOffer, isPending } = useSuspenseQuery(productsQueryOptions({ onOffer: true }));
-  const sorted = [...onOffer].sort((a, b) => discount(b) - discount(a));
+  // Still biggest-discount-first by default, but the shopper can now change it
+  // and can see which order they are looking at.
+  const sorted = sortProducts(onOffer, sort);
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
@@ -52,11 +64,19 @@ function Offers() {
       ) : sorted.length === 0 ? (
         <ProductsEmptyState suggestions={["serum", "moisturizer", "hair oil"]} />
       ) : (
-        <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {sorted.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
+        <>
+          <ProductSort
+            className="mt-5"
+            value={sort}
+            count={sorted.length}
+            onChange={(v) => navigate({ search: (prev) => ({ ...prev, sort: v }), replace: true })}
+          />
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+            {sorted.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        </>
       )}
     </div>
   );

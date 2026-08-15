@@ -26,6 +26,9 @@ export interface PromoCode {
   is_active: boolean;
 }
 
+/** What the create form sends — the id comes back from the server. */
+export type PromoInput = Omit<PromoCode, "id">;
+
 export function PromotionsPanel() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -48,7 +51,7 @@ export function PromotionsPanel() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (newPromo: any) =>
+    mutationFn: (newPromo: PromoInput) =>
       apiFetch("/feedback/promotions", { method: "POST", body: JSON.stringify(newPromo) }),
     onSuccess: () => {
       toast.success("Promo code created!");

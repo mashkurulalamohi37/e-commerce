@@ -18,7 +18,12 @@ class Settings(BaseSettings):
     # repository. Outside development this must be supplied and is verified below.
     SECRET_KEY: str = ""
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 7  # 7 days
+    # Was 7 days. A stolen token stayed usable for a week, and the token lives in
+    # localStorage where any XSS can read it, so the window is the exposure.
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 12  # 12 hours
+
+    # Turned off in the test suite, which fires the same endpoint in a loop.
+    RATE_LIMIT_ENABLED: bool = True
 
     # PostgreSQL Database URL
     # Format: postgresql+asyncpg://user:password@host:port/dbname

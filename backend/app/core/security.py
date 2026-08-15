@@ -14,15 +14,41 @@ from app.core.config import settings
 BCRYPT_MAX_BYTES = 72
 
 
-def create_access_token(subject: Union[str, Any], expires_delta: timedelta = None) -> str:
+def create_access_token(
+    subject: Union[str, Any],
+    password_hash: str = None,
+    expires_delta: timedelta = None,
+) -> str:
+    """Issue an access token, bound to the password it was issued against.
+
+    Folding the password fingerprint in gives session revocation without a token
+    store: changing or resetting the password stops every token issued before it
+    from verifying. Without this, a customer who reset a password precisely
+    because it had been stolen still left the thief signed in for the full token
+    lifetime — the reset did nothing to the session already in flight.
+    """
     if expires_delta:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
     to_encode = {"exp": expire, "sub": str(subject)}
+    if password_hash is not None:
+        to_encode["pwh"] = _password_fingerprint(password_hash)
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
+
+
+def access_token_matches_password(claims: dict, password_hash: str) -> bool:
+    """Check an access token's binding against the user's current password.
+
+    Tokens minted before this claim existed carry no `pwh` and are refused, so
+    deploying this signs everyone out once.
+    """
+    fingerprint = claims.get("pwh")
+    if not fingerprint:
+        return False
+    return hmac.compare_digest(str(fingerprint), _password_fingerprint(password_hash))
 
 
 PASSWORD_RESET_AUDIENCE = "password-reset"

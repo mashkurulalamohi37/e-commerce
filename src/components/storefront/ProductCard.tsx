@@ -96,8 +96,8 @@ export function ProductCard({ product }: { product: Product }) {
               // A full-height drawer over every grid add meant dismissing it
               // and re-finding your scroll position for each item.
               add(product, 1, { silent: true });
-              toast.success(`${product.name} added to your bag`, {
-                action: { label: "View bag", onClick: () => setOpen(true) },
+              toast.success(`${product.name} added to your cart`, {
+                action: { label: "View cart", onClick: () => setOpen(true) },
               });
               trackPromoConversion("add_to_cart", {
                 product_slug: product.slug,

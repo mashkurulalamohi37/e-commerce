@@ -81,10 +81,14 @@ function OrderConfirmed() {
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Order{" "}
+          {/* Printed as-is. This used to re-add the "NM-" prefix to a number that
+              already had one and then truncate what was left, so a customer told
+              to keep NM-4K92XR10AZ was shown #NM-NM-4K92X — which /track cannot
+              find. The API already returns it display-ready. */}
           <span className="font-mono font-semibold text-foreground">
             {orderNumber.toUpperCase()}
           </span>
-          . Keep this number — you need it to track your delivery.
+          . Keep this reference — you need it to track your delivery.
         </p>
         {order && (
           <p className="mt-1 text-sm font-medium text-foreground">

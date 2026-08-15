@@ -16,28 +16,22 @@ import catBaby from "@/assets/cat-baby.jpg";
 
 const categoryTiles = [
   {
-    slug: "makeup",
-    image: catMakeup,
-    alt: "Shop makeup category",
-    blurb: "Lips, face, eyes and nails from colour-first labels.",
-  },
-  {
     slug: "skin-care",
     image: catKbeauty,
-    alt: "Shop K-beauty skin care category",
-    blurb: "Cleansers, serums and moisturizers for humid weather.",
+    alt: "Shop skin care category",
+    blurb: "Cleansers, serums, exfoliators and moisturizers.",
   },
   {
     slug: "hair-care",
     image: catHair,
     alt: "Shop hair care category",
-    blurb: "Shampoo, conditioner and oils for stronger hair.",
+    blurb: "Shampoo, serums and scalp treatment formulas.",
   },
   {
-    slug: "baby-care",
+    slug: "body-care",
     image: catBaby,
-    alt: "Shop mom and baby care category",
-    blurb: "Gentle bath, lotion and diapering essentials.",
+    alt: "Shop body care category",
+    blurb: "Nourishing lotions and soothing body care.",
   },
 ];
 

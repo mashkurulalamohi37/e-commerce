@@ -9,6 +9,7 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { FormField, fieldProps } from "@/components/ui/form-field";
 import { Textarea } from "@/components/ui/textarea";
 
 const MAX_COMMENT = 1000;
@@ -231,16 +232,24 @@ function Questions({ productId }: { productId: string }) {
         }}
       >
         {!user && (
-          <div className="space-y-1.5">
-            <Label htmlFor="qa-name">Your name</Label>
+          // "Optional" was a placeholder restating the label; it belongs in the
+          // hint, where it stays visible once the field has text in it.
+          <FormField
+            id="qa-name"
+            label="Your name"
+            hint="Optional — we show “Customer” if you leave it blank."
+          >
             <Input
-              id="qa-name"
-              placeholder="Optional"
+              {...fieldProps(
+                "qa-name",
+                undefined,
+                "Optional — we show “Customer” if you leave it blank.",
+              )}
               maxLength={120}
               value={askerName}
               onChange={(e) => setAskerName(e.target.value)}
             />
-          </div>
+          </FormField>
         )}
         <div className="space-y-1.5">
           <Label htmlFor="qa-question">Your question</Label>

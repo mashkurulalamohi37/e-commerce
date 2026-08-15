@@ -38,6 +38,9 @@ export interface ProductItem {
   image_url?: string;
 }
 
+/** What the create and update forms send. Server-generated fields are absent. */
+export type ProductInput = Partial<Omit<ProductItem, "id" | "rating" | "reviews_count">>;
+
 export function ProductsAdminPanel() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
@@ -70,7 +73,7 @@ export function ProductsAdminPanel() {
   });
 
   const createMutation = useMutation({
-    mutationFn: (newProd: any) =>
+    mutationFn: (newProd: ProductInput) =>
       apiFetch("/products/", { method: "POST", body: JSON.stringify(newProd) }),
     onSuccess: () => {
       toast.success("Product created successfully!");
@@ -80,11 +83,11 @@ export function ProductsAdminPanel() {
       resetForm();
       setIsOpen(false);
     },
-    onError: (err: any) => toast.error(err.message || "Failed to create product"),
+    onError: (err: Error) => toast.error(err.message || "Failed to create product"),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: any }) =>
+    mutationFn: ({ id, data }: { id: string; data: ProductInput }) =>
       apiFetch(`/products/${id}`, { method: "PUT", body: JSON.stringify(data) }),
     onSuccess: () => {
       toast.success("Product updated successfully!");
@@ -94,7 +97,7 @@ export function ProductsAdminPanel() {
       resetForm();
       setIsOpen(false);
     },
-    onError: (err: any) => toast.error(err.message || "Failed to update product"),
+    onError: (err: Error) => toast.error(err.message || "Failed to update product"),
   });
 
   const deleteMutation = useMutation({
@@ -104,7 +107,7 @@ export function ProductsAdminPanel() {
       queryClient.invalidateQueries({ queryKey: ["admin", "products"] });
       queryClient.invalidateQueries({ queryKey: ["products"] });
     },
-    onError: (err: any) => toast.error(err.message || "Failed to delete product"),
+    onError: (err: Error) => toast.error(err.message || "Failed to delete product"),
   });
 
   function resetForm() {

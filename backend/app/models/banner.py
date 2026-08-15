@@ -3,14 +3,14 @@ from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy import String, Integer, Boolean, DateTime
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy.dialects.postgresql import UUID
+from app.db.types import GUID
 from app.db.base_class import Base
 
 
 class Banner(Base):
     __tablename__ = "banners"
 
-    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    id: Mapped[uuid.UUID] = mapped_column(GUID(), primary_key=True, default=uuid.uuid4)
     title: Mapped[str] = mapped_column(String(255), nullable=False)
     subtitle: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     kicker: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)

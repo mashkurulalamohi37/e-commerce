@@ -71,102 +71,82 @@
 
 :root {
   --radius: 0.875rem;
-  --background: oklch(0.99 0.005 230);
-  --foreground: oklch(0.32 0.07 270);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.32 0.07 270);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.32 0.07 270);
-  --primary: oklch(0.68 0.07 195);
-  --primary-foreground: oklch(0.22 0.05 265);
-  /* --primary as a foreground only reached 2.7:1 on white, failing WCAG AA for
-     the small links it was used on. It stays as-is for button *backgrounds*
-     (where its own foreground pairs at 6.2:1); text and icon uses take these. */
-  --link: oklch(0.52 0.09 195);          /* 5.1:1 on --background */
-  --rating: oklch(0.64 0.13 82);          /* 3.4:1 — meets the 3:1 graphic minimum */
-  --secondary: oklch(0.94 0.02 230);
-  --secondary-foreground: oklch(0.32 0.06 265);
-  --muted: oklch(0.955 0.012 230);
-  --muted-foreground: oklch(0.40 0.04 250);
-  --accent: oklch(0.93 0.03 210);
-  --accent-foreground: oklch(0.3 0.07 265);
+  --background: oklch(0.965 0.012 85);
+  --foreground: oklch(0.25 0.06 270);
+  --card: oklch(0.99 0.005 85 / 0.92);
+  --card-foreground: oklch(0.25 0.06 270);
+  --popover: oklch(0.99 0.005 85);
+  --popover-foreground: oklch(0.25 0.06 270);
+  --primary: oklch(0.55 0.12 195);
+  --primary-foreground: oklch(0.99 0 0);
+  --link: oklch(0.48 0.12 195);
+  --rating: oklch(0.64 0.13 82);
+  --secondary: oklch(0.93 0.025 85);
+  --secondary-foreground: oklch(0.25 0.06 265);
+  --muted: oklch(0.94 0.018 85);
+  --muted-foreground: oklch(0.42 0.04 250);
+  --accent: oklch(0.91 0.04 210);
+  --accent-foreground: oklch(0.25 0.07 265);
   --destructive: oklch(0.55 0.21 27);
   --destructive-foreground: oklch(0.99 0.01 80);
   --sale: oklch(0.55 0.19 15);
   --sale-foreground: oklch(0.99 0.01 80);
-  /* Status colours. Separate from --primary so state never reads as branding.
-     Each pairs at >=4.5:1 on its own surface token and on --card. */
-  --success: oklch(0.48 0.13 155);        /* 4.9:1 on --card */
-  --success-surface: oklch(0.95 0.03 155);
-  --warning: oklch(0.52 0.12 70);         /* 4.7:1 on --card */
-  --warning-surface: oklch(0.95 0.04 75);
-  --info: oklch(0.5 0.14 260);            /* 5.6:1 on --card */
-  --info-surface: oklch(0.95 0.03 260);
+  --success: oklch(0.48 0.13 155);
+  --success-surface: oklch(0.94 0.04 155);
+  --warning: oklch(0.52 0.12 70);
+  --warning-surface: oklch(0.94 0.05 75);
+  --info: oklch(0.5 0.14 260);
+  --info-surface: oklch(0.94 0.04 260);
   --gold: oklch(0.78 0.11 82);
   --gold-foreground: oklch(0.28 0.05 45);
-  --surface: oklch(0.97 0.01 230);
-  /* White tile labels sit on this gradient. The old pastel stops (0.90/0.82)
-     put white text at ~1.4:1 — a hard WCAG AA failure. These land white at
-     ~5.6:1 on the lighter stop and ~7.4:1 on the darker one. */
-  --concern-tile-top: oklch(0.55 0.09 200);
-  --concern-tile-bottom: oklch(0.46 0.1 195);
-  --band: oklch(0.35 0.09 270);
+  --surface: oklch(0.95 0.015 85);
+  --concern-tile-top: oklch(0.52 0.11 200);
+  --concern-tile-bottom: oklch(0.42 0.11 195);
+  --band: oklch(0.30 0.09 270);
   --band-foreground: oklch(0.98 0.01 210);
   --band-accent: oklch(0.68 0.07 195);
   --band-accent-foreground: oklch(0.28 0.07 270);
-  --border: oklch(0.9 0.015 230);
-  --input: oklch(0.9 0.015 230);
-  --ring: oklch(0.55 0.08 265);
+  --border: oklch(0.88 0.02 85);
+  --input: oklch(0.88 0.02 85);
+  --ring: oklch(0.52 0.11 195);
 }
 
-/*
- * Dark theme.
- *
- * Re-derived from the light palette's hues. The previous values were built on
- * warm browns (hue ~40) while light is cool blue (hue ~230), so the two read as
- * two different brands rather than two modes of one. Every hue below now
- * matches its light-mode counterpart; only lightness and chroma move.
- *
- * Applied via `.dark` on <html>, set by the inline script in __root.tsx before
- * first paint. Contrast noted where a pairing is load-bearing.
- */
 .dark {
-  --background: oklch(0.18 0.015 250);
+  --background: oklch(0.14 0.02 260);
   --foreground: oklch(0.95 0.01 230);
-  --card: oklch(0.23 0.018 250);
+  --card: oklch(0.19 0.022 260 / 0.92);
   --card-foreground: oklch(0.95 0.01 230);
-  --popover: oklch(0.23 0.018 250);
+  --popover: oklch(0.19 0.022 260);
   --popover-foreground: oklch(0.95 0.01 230);
-  --primary: oklch(0.72 0.08 195);
-  --primary-foreground: oklch(0.18 0.03 250);   /* 8.9:1 on --primary */
-  --link: oklch(0.78 0.09 195);                 /* 9.4:1 on --background */
+  --primary: oklch(0.68 0.12 195);
+  --primary-foreground: oklch(0.14 0.03 260);
+  --link: oklch(0.75 0.11 195);
   --rating: oklch(0.78 0.13 82);
-  --secondary: oklch(0.29 0.025 250);
+  --secondary: oklch(0.24 0.03 260);
   --secondary-foreground: oklch(0.95 0.01 230);
-  --muted: oklch(0.28 0.022 250);
-  --muted-foreground: oklch(0.72 0.02 240);     /* 6.1:1 on --background */
-  --accent: oklch(0.32 0.035 235);
+  --muted: oklch(0.23 0.025 260);
+  --muted-foreground: oklch(0.72 0.02 240);
+  --accent: oklch(0.28 0.04 235);
   --accent-foreground: oklch(0.95 0.01 230);
-  --destructive: oklch(0.68 0.17 27);           /* 5.4:1 on --background */
+  --destructive: oklch(0.68 0.17 27);
   --destructive-foreground: oklch(0.18 0.02 27);
   --sale: oklch(0.7 0.16 18);
   --sale-foreground: oklch(0.18 0.02 20);
   --success: oklch(0.76 0.14 155);
-  --success-surface: oklch(0.27 0.04 155);
+  --success-surface: oklch(0.25 0.05 155);
   --warning: oklch(0.8 0.12 75);
-  --warning-surface: oklch(0.29 0.04 70);
+  --warning-surface: oklch(0.27 0.05 70);
   --info: oklch(0.76 0.12 260);
-  --info-surface: oklch(0.28 0.04 260);
+  --info-surface: oklch(0.26 0.05 260);
   --gold: oklch(0.78 0.11 82);
   --gold-foreground: oklch(0.2 0.03 60);
-  --surface: oklch(0.22 0.018 250);
-  /* White tile labels: 5.9:1 and 8.1:1, matching the light-mode treatment. */
+  --surface: oklch(0.18 0.02 260);
   --concern-tile-top: oklch(0.52 0.09 200);
   --concern-tile-bottom: oklch(0.42 0.1 195);
-  --band: oklch(0.29 0.06 265);
+  --band: oklch(0.25 0.07 265);
   --band-foreground: oklch(0.96 0.01 230);
-  --band-accent: oklch(0.72 0.08 195);
-  --band-accent-foreground: oklch(0.2 0.04 265);
+  --band-accent: oklch(0.68 0.09 195);
+  --band-accent-foreground: oklch(0.16 0.04 265);
 
   --border: oklch(1 0 0 / 14%);
   --input: oklch(1 0 0 / 18%);
@@ -178,9 +158,6 @@
     border-color: var(--color-border);
   }
 
-  /* The header is sticky (h-16/h-20 plus a ~42px menu bar), so an unadjusted
-     #anchor scrolls its target underneath it. Setting this once fixes every
-     anchor on the site rather than per-section scroll-mt. */
   html {
     scroll-padding-top: 8.5rem;
   }
@@ -199,9 +176,10 @@
   body {
     background-color: var(--color-background);
     background-image: 
-      radial-gradient(at 12% 12%, oklch(0.96 0.03 25 / 0.55) 0px, transparent 45%),
-      radial-gradient(at 88% 18%, oklch(0.95 0.035 195 / 0.45) 0px, transparent 50%),
-      radial-gradient(at 50% 65%, oklch(0.965 0.02 85 / 0.4) 0px, transparent 60%);
+      radial-gradient(circle at 10% 10%, oklch(0.92 0.07 45 / 0.6) 0px, transparent 55%),
+      radial-gradient(circle at 90% 15%, oklch(0.91 0.06 195 / 0.55) 0px, transparent 55%),
+      radial-gradient(circle at 50% 60%, oklch(0.94 0.04 85 / 0.5) 0px, transparent 65%),
+      radial-gradient(circle at 85% 85%, oklch(0.93 0.05 330 / 0.45) 0px, transparent 55%);
     background-attachment: fixed;
     color: var(--color-foreground);
     font-family: var(--font-sans);
@@ -210,9 +188,10 @@
 
   .dark body {
     background-image:
-      radial-gradient(at 12% 12%, oklch(0.26 0.04 250 / 0.5) 0px, transparent 45%),
-      radial-gradient(at 88% 18%, oklch(0.24 0.045 200 / 0.45) 0px, transparent 50%),
-      radial-gradient(at 50% 65%, oklch(0.25 0.035 265 / 0.4) 0px, transparent 60%);
+      radial-gradient(circle at 10% 10%, oklch(0.26 0.08 195 / 0.6) 0px, transparent 50%),
+      radial-gradient(circle at 90% 15%, oklch(0.24 0.08 280 / 0.55) 0px, transparent 50%),
+      radial-gradient(circle at 50% 60%, oklch(0.22 0.06 35 / 0.45) 0px, transparent 60%),
+      radial-gradient(circle at 85% 85%, oklch(0.25 0.07 330 / 0.45) 0px, transparent 55%);
   }
 
   h1,

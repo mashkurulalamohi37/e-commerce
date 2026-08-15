@@ -1,10 +1,3 @@
-import b1 from "@/assets/brand-banner-1.jpg";
-import b2 from "@/assets/brand-banner-2.jpg";
-import b3 from "@/assets/brand-banner-3.jpg";
-import b4 from "@/assets/brand-banner-4.jpg";
-import b5 from "@/assets/brand-banner-5.jpg";
-import b6 from "@/assets/brand-banner-6.jpg";
-
 export type Promo = {
   slug: string;
   image: string;
@@ -12,71 +5,70 @@ export type Promo = {
   headline: string;
   sub: string;
   tone: "light" | "dark";
-  /** Search term used to build the filtered product listing. */
   query: string;
   blurb: string;
 };
 
 export const promos: Promo[] = [
   {
-    slug: "grooming-essentials",
-    image: b1,
-    alt: "Grooming trimmer offer banner",
-    headline: "The only trimmer you'll ever need",
-    sub: "Grooming essentials",
-    tone: "light",
-    query: "grooming",
-    blurb: "Trimmers, beard oils and men's grooming picks, delivered nationwide.",
-  },
-  {
-    slug: "summer-body-wash",
-    image: b2,
-    alt: "Summer body wash offer banner",
-    headline: "Summer perfect protection",
-    sub: "Up to 50% off",
+    slug: "sebotic-scalp-care",
+    image: "/promos/sebotic-scalp-care.jpeg",
+    alt: "Sebotic Shampoo Banner",
+    headline: "Sebotic Dermatological Shampoo",
+    sub: "Physiological & Anti-Dandruff",
     tone: "dark",
-    query: "body wash",
-    blurb: "Cooling body washes and shower gels for humid Bangladeshi summers.",
+    query: "sebotic",
+    blurb: "Delicate daily hair and scalp cleansers for flaky, sensitive hair.",
   },
   {
-    slug: "herbal-hair-oils",
-    image: b3,
-    alt: "Herbal hair oil brand banner",
-    headline: "Introducing herbal hair oils",
-    sub: "Naturals collection",
-    tone: "light",
-    query: "hair oil",
-    blurb: "Cold-pressed and herbal hair oils for stronger, shinier hair.",
-  },
-  {
-    slug: "treasure-of-glow",
-    image: b4,
-    alt: "Skincare bundle offer banner",
-    headline: "Treasure of glow",
-    sub: "Up to 35% off + free delivery",
+    slug: "lipiol-skincare-range",
+    image: "/promos/lipiol-skincare-range.jpeg",
+    alt: "Lipiol Cleansing Oil Banner",
+    headline: "Lipiol Intensive Skin Hydration",
+    sub: "Cleansing Oil & Facial Cream",
     tone: "dark",
-    query: "skin care",
-    blurb: "Cleansers, moisturizers and masks bundled at bundle-only pricing.",
+    query: "lipiol",
+    blurb: "Lipid-replenishing, dermatologically tested protection for sensitive skin.",
   },
   {
-    slug: "serum-edit",
-    image: b5,
-    alt: "Serum sale banner",
-    headline: "Serum edit",
-    sub: "Up to 33% off",
+    slug: "swiss-formula-serums",
+    image: "/promos/swiss-formula-serums.jpeg",
+    alt: "Swiss Formula Serums Banner",
+    headline: "Swiss Formula Face & Hair Serums",
+    sub: "Hydrating & Collagen Boosting",
     tone: "dark",
-    query: "serum",
-    blurb: "Vitamin C, niacinamide and barrier serums from verified labs.",
+    query: "swiss",
+    blurb: "High-potency hyaluronic acid and nutrient-dense revitalizing serums.",
   },
   {
-    slug: "soft-skin-body-care",
-    image: b6,
-    alt: "Shower gel offer banner",
-    headline: "Soft skin",
-    sub: "Body care picks",
+    slug: "keralise-acne-care",
+    image: "/promos/keralise-acne-care.jpeg",
+    alt: "Keralise Comedolytic Cream Banner",
+    headline: "Keralise Comedolytic & Gel Scrub",
+    sub: "Purifying & Exfoliating",
     tone: "dark",
-    query: "body care",
-    blurb: "Lotions, hand care and body essentials for everyday softness.",
+    query: "keralise",
+    blurb: "Cell renewal and purifying exfoliation for acne-prone skin.",
+  },
+  {
+    slug: "protelion-sun-protection",
+    image: "/promos/protelion-sun-protection.jpeg",
+    alt: "Protelion 50 Sunscreen Banner",
+    headline: "Protelion 50 UVB + UVA Protection",
+    sub: "SPF 50 Solar Protection",
+    tone: "dark",
+    query: "protelion",
+    blurb: "Lightweight, non-greasy sunscreen formulated for sensitive skin.",
+  },
+  {
+    slug: "lenus-body-care",
+    image: "/promos/lenus-body-care.jpeg",
+    alt: "Lenus Body Lotion Banner",
+    headline: "Lenus Soothing Body Care",
+    sub: "Refreshing Body Lotion",
+    tone: "dark",
+    query: "lenus",
+    blurb: "Instant cooling relief and long-lasting hydration for reactive skin.",
   },
 ];
 

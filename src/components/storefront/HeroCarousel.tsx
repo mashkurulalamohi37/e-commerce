@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import useEmblaCarousel from "embla-carousel-react";
 import Autoplay from "embla-carousel-autoplay";
-import { Link } from "@tanstack/react-router";
-import { ChevronLeft, ChevronRight, Pause, Play } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { Banner } from "@/lib/banner-queries";
 import { BannerImage } from "./BannerImage";
+import { BannerLink } from "./BannerLink";
 import { cn } from "@/lib/utils";
 
 /**
@@ -61,7 +61,7 @@ export function HeroCarousel({ slides }: { slides: Banner[] }) {
               aria-roledescription="slide"
               aria-label={`${i + 1} of ${slides.length}`}
             >
-              <Link to={(slide.ctaHref || "/offers") as "/offers"} className="block">
+              <BannerLink href={slide.ctaHref} className="block">
                 <BannerImage
                   src={slide.imageUrl}
                   alt={slide.alt}
@@ -95,7 +95,7 @@ export function HeroCarousel({ slides }: { slides: Banner[] }) {
                     </span>
                   ) : null}
                 </div>
-              </Link>
+              </BannerLink>
             </div>
           ))}
         </div>
@@ -123,15 +123,7 @@ export function HeroCarousel({ slides }: { slides: Banner[] }) {
               artwork — invisible on light banners and far under the minimum
               touch target. They now sit on a dark pill with a 24px hit area. */}
           <div className="absolute inset-x-0 bottom-3 flex justify-center">
-            <div className="flex items-center gap-0.5 rounded-full bg-foreground/55 px-1.5 py-0.5 backdrop-blur-sm">
-              <button
-                type="button"
-                aria-label={playing ? "Pause slideshow" : "Play slideshow"}
-                onClick={() => setPlaying((p) => !p)}
-                className="grid size-6 place-items-center rounded-full text-background transition-colors hover:bg-background/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-background"
-              >
-                {playing ? <Pause className="size-3" /> : <Play className="size-3" />}
-              </button>
+            <div className="flex items-center gap-0.5 rounded-full bg-foreground/55 px-2 py-1 backdrop-blur-sm">
               {slides.map((slide, i) => (
                 <button
                   key={slide.id}

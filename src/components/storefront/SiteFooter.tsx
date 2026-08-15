@@ -31,6 +31,8 @@ const groups = [
       // answer it names, the second reaches the tracking page it names.
       { label: "Delivery & returns", to: "/help" as const, hash: "delivery-returns" },
       { label: "Track order", to: "/track" as const },
+      { label: "Privacy policy", to: "/privacy" as const },
+      { label: "Terms & conditions", to: "/terms" as const },
     ],
   },
 ];

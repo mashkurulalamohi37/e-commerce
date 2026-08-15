@@ -1,7 +1,9 @@
 """Shared fixtures.
 
-Tests run against a real Postgres because the models use postgresql-specific
-column types (UUID, JSON). Point TEST_DATABASE_URL at a throwaway database:
+Runs on SQLite by default. The models now use dialect-agnostic column types (see
+app/db/types.py), so Postgres is no longer required — but pointing
+TEST_DATABASE_URL at one is still worth doing before a release, because that is
+what production runs:
 
     docker run -d --rm --name nillsmart-test-pg \
       -e POSTGRES_PASSWORD=testpass -e POSTGRES_USER=testuser \
@@ -13,12 +15,15 @@ column types (UUID, JSON). Point TEST_DATABASE_URL at a throwaway database:
 import os
 import uuid
 
-os.environ.setdefault(
-    "TEST_DATABASE_URL", "postgresql+asyncpg://testuser:testpass@localhost:55432/nillsmart_test"
-)
+if "TEST_DATABASE_URL" not in os.environ:
+    os.environ["TEST_DATABASE_URL"] = "sqlite+aiosqlite:///./test_ecommerce.db"
 os.environ["DATABASE_URL"] = os.environ["TEST_DATABASE_URL"]
 os.environ.setdefault("SECRET_KEY", "test-secret-key-long-enough-for-hs256-padding")
 os.environ.setdefault("ENVIRONMENT", "development")
+# The suite calls the same endpoint in a loop by design; per-IP throttling would
+# make it fail for reasons that have nothing to do with the code under test.
+# Rate limiting has its own tests that turn it back on explicitly.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest  # noqa: E402
 import pytest_asyncio  # noqa: E402
