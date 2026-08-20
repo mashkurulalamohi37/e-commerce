@@ -1,4 +1,5 @@
 import asyncio
+import secrets
 import sys
 from pathlib import Path
 
@@ -12,7 +13,8 @@ from app.models.user import User
 
 async def main():
     email = "admin@nillsmart.com"
-    password = "admin12345"
+    # Cryptographically secure random password generated on setup
+    password = secrets.token_urlsafe(16)
     full_name = "Store Admin"
 
     async with engine.begin() as conn:
@@ -34,7 +36,12 @@ async def main():
             )
             db.add(u)
             await db.commit()
-            print(f"Created admin account: {email} / {password}")
+            print("=" * 60)
+            print("ADMIN ACCOUNT CREATED")
+            print(f"Email:    {email}")
+            print(f"Password: {password}")
+            print("Please save this password securely and change it upon first login.")
+            print("=" * 60)
 
 if __name__ == "__main__":
     asyncio.run(main())

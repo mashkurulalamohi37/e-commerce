@@ -16,6 +16,7 @@ class Order(Base):
 
     customer_name: Mapped[str] = mapped_column(String(255), nullable=False)
     phone: Mapped[str] = mapped_column(String(50), index=True, nullable=False)
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     address: Mapped[str] = mapped_column(Text, nullable=False)
     city: Mapped[str] = mapped_column(String(100), default="Dhaka", nullable=False)
     delivery_zone: Mapped[str] = mapped_column(String(100), default="inside_dhaka", nullable=False)

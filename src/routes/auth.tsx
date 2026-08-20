@@ -227,7 +227,6 @@ function AuthPage() {
                 )}
                 inputMode="tel"
                 autoComplete="tel"
-                placeholder="01712345678"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 className="pl-10"

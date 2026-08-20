@@ -57,3 +57,48 @@ class TestPhoneNormalisation:
     )
     def test_non_matching_or_missing_values_are_refused(self, a, b):
         assert not _same_phone(a, b)
+
+
+class TestPIIMasking:
+    def test_mask_customer_name(self):
+        from app.schemas.order import mask_customer_name
+        assert mask_customer_name("Tanvir Ahmed") == "Tanvir A***"
+        assert mask_customer_name("Rahim") == "Ra***"
+        assert mask_customer_name("") == "Customer"
+
+    def test_mask_phone_number(self):
+        from app.schemas.order import mask_phone_number
+        assert mask_phone_number("01712345678") == "017****5678"
+        assert mask_phone_number("123") == "****"
+
+    def test_mask_email_address(self):
+        from app.schemas.order import mask_email_address
+        assert mask_email_address("customer@example.com") == "c***r@example.com"
+        assert mask_email_address("ab@example.com") == "a*@example.com"
+        assert mask_email_address(None) is None
+
+    def test_mask_street_address(self):
+        from app.schemas.order import mask_street_address
+        assert mask_street_address("House 12, Road 4, Dhanmondi", "Dhaka") == "Dhanmondi, Dhaka"
+        assert mask_street_address("Banani", "Dhaka") == "Area, Dhaka"
+
+
+class TestLimiterClientKey:
+    def test_untrusted_client_ignores_forwarded_headers(self):
+        from app.core.limiter import _client_key
+        class FakeRequest:
+            client = type("Client", (), {"host": "198.51.100.25"})()
+            headers = {"x-forwarded-for": "203.0.113.195", "x-real-ip": "203.0.113.195"}
+
+        # Untrusted client IP must not spoof its identity via headers
+        assert _client_key(FakeRequest()) == "198.51.100.25"
+
+    def test_trusted_proxy_respects_forwarded_headers(self):
+        from app.core.limiter import _client_key
+        class FakeRequest:
+            client = type("Client", (), {"host": "127.0.0.1"})()
+            headers = {"x-forwarded-for": "203.0.113.195, 10.0.0.1", "x-real-ip": "203.0.113.195"}
+
+        # Trusted reverse proxy (127.0.0.1) can pass client real IP
+        assert _client_key(FakeRequest()) == "203.0.113.195"
+

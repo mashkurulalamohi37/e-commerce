@@ -10,10 +10,24 @@ from sqlalchemy.orm import selectinload
 
 from app.api.v1.endpoints.reviews import find_live_promotion, promo_discount
 from app.core.config import settings
+from app.core.mailer import (
+    send_order_confirmation_email,
+    send_order_sms_notification,
+    send_order_status_email,
+)
 from app.db.session import get_db
 from app.models.order import Order, OrderIdempotency, OrderItem
 from app.models.product import Product
-from app.schemas.order import OrderCreate, OrderResponse, OrderStatusUpdate, PaymentConfirm
+from app.schemas.order import (
+    OrderCreate,
+    OrderResponse,
+    OrderStatusUpdate,
+    PaymentConfirm,
+    mask_customer_name,
+    mask_phone_number,
+    mask_email_address,
+    mask_street_address,
+)
 from app.models.user import User
 from app.api.v1.endpoints.auth import (
     get_current_admin,
@@ -206,6 +220,7 @@ async def create_order(
         user_id=current_user.id if current_user else None,
         customer_name=order_in.customer_name,
         phone=order_in.phone,
+        email=order_in.email.strip() if order_in.email else None,
         address=order_in.address,
         city=order_in.city,
         delivery_zone=order_in.delivery_zone,
@@ -240,6 +255,22 @@ async def create_order(
         db.add(OrderIdempotency(key=idempotency_key, order_id=db_order.id))
 
     await db.commit()
+
+    if db_order.email:
+        await send_order_confirmation_email(
+            to_email=db_order.email,
+            customer_name=db_order.customer_name,
+            order_number=db_order.order_number,
+            total=db_order.total,
+            address=f"{db_order.address}, {db_order.city}",
+        )
+
+    # SMS notification is sent to the mobile number (for all orders, ensuring updates via SMS or both SMS & Email)
+    track_url = f"{settings.FRONTEND_URL.rstrip('/')}/track?order={db_order.order_number}"
+    await send_order_sms_notification(
+        phone=db_order.phone,
+        message=f"Nills Mart: Order #{db_order.order_number} confirmed! Total: ৳{db_order.total:g}. Track live at {track_url}",
+    )
 
     result = await db.execute(
         select(Order).options(selectinload(Order.items)).where(Order.id == db_order.id)
@@ -301,26 +332,81 @@ async def confirm_payment(
 
 @router.get("/track", response_model=OrderResponse)
 async def track_order(
-    order_number: str, phone: str, db: AsyncSession = Depends(get_db)
+    order_number: str,
+    phone: Optional[str] = None,
+    email: Optional[str] = None,
+    db: AsyncSession = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
 ) -> Any:
-    """Look an order up by number plus the phone it was placed with.
+    """Look an order up by number, optionally verified by phone or email.
 
-    The phone comparison used to be raw string equality while `/pay` normalised
-    the same field, so a customer whose contacts store the number as
-    +8801712345678 could confirm a payment but could not then find the order.
-    Both paths now go through _same_phone.
+    Signed-in users can also track orders they own directly.
     """
+    clean_num = order_number.strip().upper()
+    if not clean_num:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Order number is required",
+        )
+
     result = await db.execute(
         select(Order)
         .options(selectinload(Order.items))
-        .where(Order.order_number == order_number.strip().upper())
+        .where(Order.order_number == clean_num)
     )
     order = result.scalars().first()
-    # Constant-time comparison, and the same 404 whether the number is unknown
-    # or the phone does not match — so this cannot confirm an order exists.
-    if not order or not _same_phone(phone, order.phone):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found with provided credentials")
-    return order
+
+    matched = False
+    verified = False
+    if order:
+        if phone:
+            if _same_phone(phone, order.phone):
+                matched = True
+                verified = True
+        elif email:
+            if order.email and email.strip().lower() == order.email.strip().lower():
+                matched = True
+                verified = True
+        elif current_user and order.user_id == current_user.id:
+            matched = True
+            verified = True
+        else:
+            # Order number itself is cryptographically unguessable (NM- + 10 random alphanumeric)
+            matched = True
+            verified = False
+
+    if not order or not matched:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Order not found with provided credentials",
+        )
+
+    if verified:
+        return order
+
+    # Mask sensitive PII for unverified anonymous tracking lookup
+    return OrderResponse(
+        id=order.id,
+        order_number=order.order_number,
+        user_id=order.user_id,
+        customer_name=mask_customer_name(order.customer_name),
+        phone=mask_phone_number(order.phone),
+        email=mask_email_address(order.email),
+        address=mask_street_address(order.address, order.city),
+        city=order.city,
+        delivery_zone=order.delivery_zone,
+        subtotal=order.subtotal,
+        delivery_fee=order.delivery_fee,
+        discount_amount=order.discount_amount,
+        total=order.total,
+        status=order.status,
+        payment_method=order.payment_method,
+        payment_status=order.payment_status,
+        payment_reference=order.payment_reference,
+        created_at=order.created_at,
+        updated_at=order.updated_at,
+        items=order.items,
+    )
 
 
 @router.get("/my", response_model=List[OrderResponse])
@@ -398,4 +484,20 @@ async def update_order_status(
     db.add(order)
     await db.commit()
     await db.refresh(order)
+
+    # Send status updates via email and/or SMS when status changes
+    if status_in.status:
+        track_url = f"{settings.FRONTEND_URL.rstrip('/')}/track?order={order.order_number}"
+        if order.email:
+            await send_order_status_email(
+                to_email=order.email,
+                customer_name=order.customer_name,
+                order_number=order.order_number,
+                new_status=order.status,
+            )
+        await send_order_sms_notification(
+            phone=order.phone,
+            message=f"Nills Mart: Order #{order.order_number} status updated to {order.status.upper()}. Track: {track_url}",
+        )
+
     return order

@@ -49,14 +49,13 @@ export function BannerImage({
   }
 
   return (
-    <div className={cn("relative overflow-hidden bg-muted", className)}>
-      <div
-        aria-hidden
-        className={cn(
-          "absolute inset-0 skeleton-shimmer transition-opacity duration-300",
-          loaded ? "opacity-0" : "opacity-100",
-        )}
-      />
+    <div className={cn("relative overflow-hidden bg-transparent", className)}>
+      {!loaded && (
+        <div
+          aria-hidden
+          className="absolute inset-0 skeleton-shimmer"
+        />
+      )}
       <img
         src={resolvedSrc}
         alt={alt}
@@ -71,7 +70,7 @@ export function BannerImage({
           setFailed(true);
         }}
         className={cn(
-          "size-full object-cover transition-opacity duration-500",
+          "size-full object-cover transition-opacity duration-300",
           loaded ? "opacity-100" : "opacity-0",
           imgClassName,
         )}

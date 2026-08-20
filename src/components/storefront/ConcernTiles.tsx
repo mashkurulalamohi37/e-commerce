@@ -1,10 +1,10 @@
 const REAL_CONCERN_IMAGES: Record<string, string> = {
-  acne: "/catalog/5e7b73c173a3.jpeg",
-  dandruff: "/catalog/888044895fb0.jpeg",
-  "dry skin": "/catalog/81ca02c166b7.jpeg",
-  "hair fall": "/catalog/550734a359ab.jpeg",
-  sun: "/catalog/725f633d3c99.jpeg",
-  "oil control": "/catalog/e34091000811.jpeg",
+  acne: "/catalog/KERALISE--Crema-Comedolitica.png",
+  dandruff: "/catalog/SEBOTIC--Anti-Dandruff-Shampoo.png",
+  "dry skin": "/catalog/LIPIOL--Emulsione.png",
+  "hair fall": "/catalog/SWISS-FORMULA--Hair-Serum.png",
+  sun: "/catalog/PROTELION50--Emulsion.png",
+  "oil control": "/catalog/KERALISE--Gel-Scrub.png",
 };
 
 import { Link } from "@tanstack/react-router";

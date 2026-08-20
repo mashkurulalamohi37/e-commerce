@@ -8,6 +8,7 @@ import {
   Clock,
   XCircle,
   Phone,
+  Mail,
   MapPin,
   Search,
   Download,
@@ -40,6 +41,7 @@ export interface OrderRecord {
   order_number: string;
   customer_name: string;
   phone: string;
+  email: string | null;
   address: string;
   city: string;
   delivery_zone: string;
@@ -119,6 +121,7 @@ export function OrdersAdminPanel() {
       !search ||
       o.order_number.toLowerCase().includes(search.toLowerCase()) ||
       o.customer_name.toLowerCase().includes(search.toLowerCase()) ||
+      (o.email && o.email.toLowerCase().includes(search.toLowerCase())) ||
       o.phone.includes(search);
     return matchesStatus && matchesSearch;
   });
@@ -138,6 +141,7 @@ export function OrdersAdminPanel() {
       Date: new Date(o.created_at).toLocaleString(),
       Customer: o.customer_name,
       Phone: o.phone,
+      Email: o.email || "N/A",
       City: o.city,
       "Items Count": o.items.reduce((acc, i) => acc + i.qty, 0),
       "Total Price (BDT)": o.total,
@@ -237,10 +241,16 @@ export function OrdersAdminPanel() {
                       </td>
                       <td className="p-3">
                         <p className="font-medium">{o.customer_name}</p>
-                        <p className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <p className="flex items-center gap-1 text-[10px] text-muted-foreground">
                           <Phone className="h-2.5 w-2.5" />
                           {o.phone}
                         </p>
+                        {o.email && (
+                          <p className="flex items-center gap-1 text-[10px] text-muted-foreground truncate max-w-[140px]">
+                            <Mail className="h-2.5 w-2.5 text-link" />
+                            {o.email}
+                          </p>
+                        )}
                       </td>
                       <td className="p-3">
                         <span className="font-semibold">{o.items?.length || 0} items</span>
@@ -306,12 +316,21 @@ export function OrdersAdminPanel() {
               <DialogTitle>Order {selectedOrder.order_number}</DialogTitle>
             </DialogHeader>
             <div className="space-y-3 text-xs py-2">
-              <div className="p-3 rounded-lg bg-muted space-y-1">
-                <p className="font-semibold">{selectedOrder.customer_name}</p>
-                <p className="flex items-center gap-1 text-muted-foreground">
+              <div className="space-y-1.5 rounded-lg bg-muted p-3">
+                <p className="font-semibold text-foreground">{selectedOrder.customer_name}</p>
+                <p className="flex items-center gap-1.5 text-muted-foreground">
                   <Phone className="h-3 w-3" /> {selectedOrder.phone}
                 </p>
-                <p className="flex items-center gap-1 text-muted-foreground">
+                {selectedOrder.email ? (
+                  <p className="flex items-center gap-1.5 text-muted-foreground">
+                    <Mail className="h-3 w-3 text-link" /> {selectedOrder.email}
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-1.5 text-[11px] italic text-muted-foreground/70">
+                    <Mail className="h-3 w-3 opacity-50" /> No email provided (SMS updates only)
+                  </p>
+                )}
+                <p className="flex items-center gap-1.5 text-muted-foreground">
                   <MapPin className="h-3 w-3" /> {selectedOrder.address}, {selectedOrder.city}
                 </p>
               </div>

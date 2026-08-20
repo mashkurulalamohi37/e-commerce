@@ -107,6 +107,24 @@ class TestAdminListing:
             await client.delete(f"/api/v1/products/{product.id}", headers=headers)
         ).status_code == 403
 
+    async def test_slug_wildcard_lookup_does_not_leak_arbitrary_products(self, client, product):
+        """A slug query containing '%' or '_' must not match all products via SQL LIKE injection."""
+        res_percent = await client.get("/api/v1/products/by-slug/%25")
+        assert res_percent.status_code == 404
+
+        res_underscore = await client.get("/api/v1/products/by-slug/_")
+        assert res_underscore.status_code == 404
+
+    async def test_security_headers_present_on_responses(self, client):
+        res = await client.get("/api/v1/products/")
+        assert res.status_code == 200
+        assert res.headers.get("x-content-type-options") == "nosniff"
+        assert res.headers.get("x-frame-options") == "DENY"
+        assert res.headers.get("referrer-policy") == "strict-origin-when-cross-origin"
+        assert "Content-Security-Policy" in res.headers or "content-security-policy" in res.headers
+        assert "Permissions-Policy" in res.headers or "permissions-policy" in res.headers
+
+
 
 class TestBanners:
     async def test_public_banner_list_is_open(self, client):

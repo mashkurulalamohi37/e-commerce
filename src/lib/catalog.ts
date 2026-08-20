@@ -109,7 +109,7 @@ const seeds: Seed[] = [
   {
     name: "SEBOTIC PHYSIOLOGICAL SHAMPOO 200 ML",
     brandSlug: "sebotic",
-    image: "/catalog/b5f971788a1c.jpeg",
+    image: "/catalog/SEBOTIC--Physiological-Shampoo.png",
     size: "200 ML",
     price: 2240,
     listPrice: 2576,
@@ -124,7 +124,7 @@ const seeds: Seed[] = [
   {
     name: "MICOXIL (Antimycotic Active Cleanser) 250 ML",
     brandSlug: "micoxil",
-    image: "/catalog/a69d82e069cb.jpeg",
+    image: "/catalog/MICOXIL--Active-Cleanser.png",
     size: "250 ML",
     price: 2290,
     listPrice: 2633,
@@ -139,7 +139,7 @@ const seeds: Seed[] = [
   {
     name: "LIPIOL EMULSIONE (Intensive Emulsion) 250 ML",
     brandSlug: "lipiol",
-    image: "/catalog/81ca02c166b7.jpeg",
+    image: "/catalog/LIPIOL--Emulsione.png",
     size: "250 ML",
     price: 3290,
     listPrice: 3783,
@@ -154,7 +154,7 @@ const seeds: Seed[] = [
   {
     name: "SWISS-FORMULA(Hair Serum) 0 ML",
     brandSlug: "swiss-formula",
-    image: "/catalog/550734a359ab.jpeg",
+    image: "/catalog/SWISS-FORMULA--Hair-Serum.png",
     size: "0 ML",
     price: 1670,
     listPrice: 1920,
@@ -169,7 +169,7 @@ const seeds: Seed[] = [
   {
     name: "LENUS (Soothing Body Lotion) 150 ML",
     brandSlug: "lenus",
-    image: "/catalog/f1ae08fbc328.jpeg",
+    image: "/catalog/KERALISE--Mousse.png",
     size: "150 ML",
     price: 2240,
     listPrice: 2576,
@@ -184,7 +184,7 @@ const seeds: Seed[] = [
   {
     name: "SWISS-FORMULA(Face Serum) 0 ML",
     brandSlug: "swiss-formula",
-    image: "/catalog/ae315fe8276c.jpeg",
+    image: "/catalog/SWISS-FORMULA--Face-Serum.png",
     size: "0 ML",
     price: 1990,
     listPrice: 2288,
@@ -199,7 +199,7 @@ const seeds: Seed[] = [
   {
     name: "LIPIOL OLIO DETERGENTE (Cleansing Oil) 40 ML",
     brandSlug: "lipiol",
-    image: "/catalog/50bbb1e4da7b.jpeg",
+    image: "/catalog/LIPIOL--Olio-Detergente.png",
     size: "40 ML",
     price: 3290,
     listPrice: 3783,
@@ -214,7 +214,7 @@ const seeds: Seed[] = [
   {
     name: "KERALISE (Crema Comedolytic ) 30 ML",
     brandSlug: "keralise",
-    image: "/catalog/5e7b73c173a3.jpeg",
+    image: "/catalog/KERALISE--Crema-Comedolitica.png",
     size: "30 ML",
     price: 2240,
     listPrice: 2576,
@@ -229,7 +229,7 @@ const seeds: Seed[] = [
   {
     name: "SEBOTIC ANTI-DANDRUFF SHAMPOO 125 ML",
     brandSlug: "sebotic",
-    image: "/catalog/888044895fb0.jpeg",
+    image: "/catalog/SEBOTIC--Anti-Dandruff-Shampoo.png",
     size: "125 ML",
     price: 2240,
     listPrice: 2576,
@@ -244,7 +244,7 @@ const seeds: Seed[] = [
   {
     name: "KERALISE GEL SCRUB 30 ML",
     brandSlug: "keralise",
-    image: "/catalog/e34091000811.jpeg",
+    image: "/catalog/KERALISE--Gel-Scrub.png",
     size: "30 ML",
     price: 2140,
     listPrice: 2461,
@@ -259,7 +259,7 @@ const seeds: Seed[] = [
   {
     name: "LIPIOL BASE (Moisturizing Cream) 500 ML",
     brandSlug: "lipiol",
-    image: "/catalog/80d1a228b4b5.png",
+    image: "/catalog/LIPIOL--Crema-Detergente.png",
     size: "500 ML",
     price: 3990,
     listPrice: 4588,
@@ -274,7 +274,7 @@ const seeds: Seed[] = [
   {
     name: "LIPIOL VISO (Intensive Facial Cream) 40 ML",
     brandSlug: "lipiol",
-    image: "/catalog/ee400ece5be1.jpeg",
+    image: "/catalog/LIPIOL--Viso.png",
     size: "40 ML",
     price: 2240,
     listPrice: 2576,
@@ -289,7 +289,7 @@ const seeds: Seed[] = [
   {
     name: "HY-SERUM--Hyaluronic-Acid 0 ML",
     brandSlug: "galenia-skin-care",
-    image: "/catalog/2ca4c1a0a203.jpeg",
+    image: "/catalog/HY-SERUM--Hyaluronic-Acid.png",
     size: "0 ML",
     price: 4290,
     listPrice: 4933,
@@ -304,7 +304,7 @@ const seeds: Seed[] = [
   {
     name: "PROTELION 50 EMULSION - EMULSIONE (UVB + UVA / SPF 50 for Oily & Sensitive Skin) 50 ML",
     brandSlug: "protelion",
-    image: "/catalog/725f633d3c99.jpeg",
+    image: "/catalog/PROTELION50--Emulsion.png",
     size: "50 ML",
     price: 2140,
     listPrice: 2461,

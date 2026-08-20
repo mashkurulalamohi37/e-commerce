@@ -4,6 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, or_, func, String
 
+from app.core.security_sql import escape_like_term
 from app.db.session import get_db
 from app.models.category import Brand
 from app.models.product import Product
@@ -38,8 +39,9 @@ async def list_products(
         # department returned an empty page. Normalise both sides: lower-case
         # and turn spaces into hyphens before comparing.
         normalised = func.replace(func.lower(Product.categories.cast(String)), " ", "-")
-        needle = f'%"{category.strip().lower().replace(" ", "-")}"%'
-        query = query.where(normalised.like(needle))
+        escaped_cat = escape_like_term(category.strip().lower().replace(" ", "-"))
+        needle = f'%"{escaped_cat}"%'
+        query = query.where(normalised.like(needle, escape="\\"))
 
     if brand:
         query = query.where(Product.brand_slug == brand)
@@ -51,18 +53,19 @@ async def list_products(
         # Shoppers search by brand ("Hikari") and by concern ("acne") as often as
         # by product name, so the brand and the JSON category/concern arrays are
         # part of the match, not just name/brief/sku.
-        pattern = f"%{search}%"
+        escaped_search = escape_like_term(search.strip())
+        pattern = f"%{escaped_search}%"
         query = query.where(
             or_(
-                Product.name.ilike(pattern),
-                Product.brief.ilike(pattern),
-                Product.sku.ilike(pattern),
-                Product.brand_slug.ilike(pattern),
-                Product.categories.cast(String).ilike(pattern),
-                Product.concerns.cast(String).ilike(pattern),
+                Product.name.ilike(pattern, escape="\\"),
+                Product.brief.ilike(pattern, escape="\\"),
+                Product.sku.ilike(pattern, escape="\\"),
+                Product.brand_slug.ilike(pattern, escape="\\"),
+                Product.categories.cast(String).ilike(pattern, escape="\\"),
+                Product.concerns.cast(String).ilike(pattern, escape="\\"),
                 # Brand display name too — "Radiant Skin Co." never matches the
                 # "radiant-skin-co" slug on its own.
-                Product.brand_slug.in_(select(Brand.slug).where(Brand.name.ilike(pattern))),
+                Product.brand_slug.in_(select(Brand.slug).where(Brand.name.ilike(pattern, escape="\\"))),
             )
         )
 
@@ -101,8 +104,13 @@ async def get_product_by_slug(
     who knew or guessed the slug. Admins keep the preview so an unpublished
     product can still be checked before it goes live.
     """
-    result = await db.execute(select(Product).where(Product.slug == slug))
+    clean_slug = slug.strip()
+    result = await db.execute(select(Product).where(Product.slug == clean_slug))
     product = result.scalars().first()
+    if not product:
+        escaped_slug = escape_like_term(clean_slug)
+        result = await db.execute(select(Product).where(Product.slug.like(f"{escaped_slug}%", escape="\\")))
+        product = result.scalars().first()
     is_admin = viewer is not None and viewer.role == "admin"
     if not product or (not product.published and not is_admin):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product not found")

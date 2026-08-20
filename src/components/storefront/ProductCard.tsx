@@ -14,11 +14,22 @@ export function ProductCard({ product }: { product: Product }) {
   // "Only 0 left in stock".
   const soldOut = product.stock <= 0;
 
+  const prefetchProduct = () => {
+    if (typeof window !== "undefined" && product.image) {
+      const img = new Image();
+      img.src = product.image;
+    }
+  };
+
   return (
-    <article className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lift">
+    <article
+      className="group relative flex w-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/90 shadow-card backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lift"
+      onMouseEnter={prefetchProduct}
+    >
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
+        preload="intent"
         className="relative block overflow-hidden"
       >
         <img
@@ -58,6 +69,7 @@ export function ProductCard({ product }: { product: Product }) {
           <Link
             to="/product/$slug"
             params={{ slug: product.slug }}
+            preload="intent"
             className="mt-1 line-clamp-2 text-sm font-bold leading-snug text-foreground transition-colors group-hover:text-link sm:text-base"
           >
             {product.name}

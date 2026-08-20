@@ -20,9 +20,15 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
+docs_url = "/docs" if settings.ENVIRONMENT == "development" else None
+redoc_url = "/redoc" if settings.ENVIRONMENT == "development" else None
+openapi_url = f"{settings.API_V1_STR}/openapi.json" if settings.ENVIRONMENT == "development" else None
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
-    openapi_url=f"{settings.API_V1_STR}/openapi.json",
+    openapi_url=openapi_url,
+    docs_url=docs_url,
+    redoc_url=redoc_url,
     lifespan=lifespan,
 )
 
@@ -31,6 +37,29 @@ app = FastAPI(
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.add_middleware(SlowAPIMiddleware)
+
+
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    response.headers["Content-Security-Policy"] = (
+        "default-src 'self'; "
+        "img-src 'self' data: https: blob:; "
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+        "font-src 'self' data: https://fonts.gstatic.com; "
+        "script-src 'self' 'unsafe-inline'; "
+        "connect-src 'self' http://localhost:* http://127.0.0.1:* https:; "
+        "frame-ancestors 'none'; "
+        "base-uri 'self'; "
+        "form-action 'self';"
+    )
+    if settings.ENVIRONMENT != "development":
+        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+    return response
 
 # CORS.
 #
@@ -42,13 +71,20 @@ app.add_middleware(SlowAPIMiddleware)
 # The any-localhost-port regex is a development convenience and is only applied
 # there; with allow_credentials on, it has no business in a deployed service.
 cors_kwargs = {
-    "allow_origins": settings.BACKEND_CORS_ORIGINS,
+    "allow_origins": list(set([
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "https://nillsmart.com",
+        "https://www.nillsmart.com",
+        "http://nillsmart.com",
+        "http://www.nillsmart.com",
+        *(settings.BACKEND_CORS_ORIGINS if isinstance(settings.BACKEND_CORS_ORIGINS, list) else [settings.BACKEND_CORS_ORIGINS]),
+    ])),
     "allow_credentials": True,
     "allow_methods": ["*"],
     "allow_headers": ["*"],
+    "allow_origin_regex": r"https?://(localhost|127\.0\.0\.1|.*\.?nillsmart\.com)(:\d+)?",
 }
-if settings.ENVIRONMENT == "development":
-    cors_kwargs["allow_origin_regex"] = r"https?://(localhost|127\.0\.0\.1)(:\d+)?"
 
 app.add_middleware(CORSMiddleware, **cors_kwargs)
 

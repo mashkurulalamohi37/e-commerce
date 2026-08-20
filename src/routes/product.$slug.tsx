@@ -15,12 +15,39 @@ import {
   categoryBySlug,
   discount,
   taka,
+  products as fallbackProducts,
+  type Product,
   DELIVERY_INSIDE_DHAKA,
   DELIVERY_OUTSIDE_DHAKA,
 } from "@/lib/catalog";
 
 export const Route = createFileRoute("/product/$slug")({
   loader: async ({ params, context }) => {
+    // 1. Instant cache check: if products are already in QueryClient cache, return immediately
+    const cachedQueries = context.queryClient.getQueriesData<Product[]>({ queryKey: ["products"] });
+    for (const [, productList] of cachedQueries) {
+      if (Array.isArray(productList)) {
+        const found = productList.find((p: Product) => p.slug === params.slug);
+        if (found) {
+          context.queryClient.prefetchQuery(productQueryOptions(params.slug));
+          return found;
+        }
+      }
+    }
+
+    // 2. Check already cached single product query
+    const singleCached = context.queryClient.getQueryData<Product>(["product", params.slug]);
+    if (singleCached) {
+      return singleCached;
+    }
+
+    // 3. Instant fallback match so there is zero navigation delay
+    const fallbackMatch = fallbackProducts.find((p: Product) => p.slug === params.slug);
+    if (fallbackMatch) {
+      context.queryClient.prefetchQuery(productQueryOptions(params.slug));
+      return fallbackMatch;
+    }
+
     try {
       return await context.queryClient.ensureQueryData(productQueryOptions(params.slug));
     } catch (error) {
@@ -145,7 +172,7 @@ function ProductPage() {
             <dt className="text-muted-foreground">SKU</dt>
             <dd>{product.sku}</dd>
             <dt className="text-muted-foreground">Category</dt>
-            <dd>{product.categories.map((c) => categoryBySlug(c)?.name ?? c).join(", ")}</dd>
+            <dd>{product.categories.map((c: string) => categoryBySlug(c)?.name ?? c).join(", ")}</dd>
             <dt className="text-muted-foreground">Brand</dt>
             <dd>{brandName(product.brandSlug)}</dd>
           </dl>

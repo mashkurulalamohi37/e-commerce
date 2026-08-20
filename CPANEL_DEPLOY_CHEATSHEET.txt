@@ -1,0 +1,66 @@
+================================================================================
+          NILLS MART — cPANEL DEPLOYMENT INSTRUCTIONS & CHEATSHEET
+================================================================================
+
+Files created and ready for upload:
+1. cpanel_frontend_public_html.zip  -> For public_html/
+2. cpanel_backend_nillsmart_api.zip -> For /home/USERNAME/nillsmart-api/
+
+--------------------------------------------------------------------------------
+STEP 1: SUBDOMAIN SETUP (cPanel)
+--------------------------------------------------------------------------------
+1. Go to cPanel -> Domains -> Create A New Domain.
+2. Domain: api.yourdomain.com (e.g. api.nillsmart.com)
+3. Uncheck "Share document root".
+4. Document root: /home/USERNAME/api.yourdomain.com
+
+--------------------------------------------------------------------------------
+STEP 2: BACKEND DEPLOYMENT
+--------------------------------------------------------------------------------
+1. In cPanel File Manager, go to /home/USERNAME/ (your home folder, OUTSIDE public_html).
+2. Create a folder named: nillsmart-api
+3. Upload `cpanel_backend_nillsmart_api.zip` into /home/USERNAME/nillsmart-api/ and EXTRACT it.
+4. Rename `.env.cpanel.example` to `.env` (or create .env) and set:
+
+   ENVIRONMENT=production
+   DATABASE_URL=sqlite+aiosqlite:////home/USERNAME/nillsmart-api/ecommerce.db
+   SECRET_KEY=generate_a_random_40_char_string_here
+   CORS_ORIGINS=["https://yourdomain.com","https://www.yourdomain.com"]
+   UPLOAD_DIR=/home/USERNAME/nillsmart-api/uploads
+
+   *(Replace USERNAME with your cPanel username, yourdomain.com with your domain)*
+
+5. Go to cPanel -> Setup Python App -> Create Application:
+   - Python Version: 3.11 (or 3.10+)
+   - Application root: nillsmart-api
+   - Application URL: api.yourdomain.com
+   - Application startup file: passenger_wsgi.py
+   - Application Entry point: application
+   - Click "Create".
+
+6. In cPanel Terminal (or SSH), run the command shown on top of the Python App page:
+   source /home/USERNAME/virtualenv/nillsmart-api/3.11/bin/activate && cd ~/nillsmart-api
+   pip install -r requirements-cpanel.txt
+   python scripts/seed_catalog.py
+   python scripts/create_admin_auto.py
+
+7. Click "Restart" on the Python App page.
+
+--------------------------------------------------------------------------------
+STEP 3: FRONTEND DEPLOYMENT
+--------------------------------------------------------------------------------
+1. In cPanel File Manager, open `public_html/`.
+2. Upload `cpanel_frontend_public_html.zip` into `public_html/`.
+3. Extract `cpanel_frontend_public_html.zip` directly inside `public_html/`.
+   (Ensure .htaccess, index.html, and assets/ are placed directly inside public_html).
+
+--------------------------------------------------------------------------------
+STEP 4: SSL CERTIFICATES
+--------------------------------------------------------------------------------
+1. In cPanel -> SSL/TLS Status.
+2. Select yourdomain.com, www.yourdomain.com, and api.yourdomain.com.
+3. Click "Run AutoSSL".
+
+================================================================================
+Deployment Complete! Your site is live at https://yourdomain.com
+================================================================================

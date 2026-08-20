@@ -2,20 +2,14 @@
 @source "../src";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 /*
  * Design system definition.
  *
  * The @theme inline block maps CSS custom properties to Tailwind utility
  * classes (e.g. --color-primary -> bg-primary, text-primary).
  *
- * The :root and .dark blocks define the actual color values using oklch.
+ * The :root block defines the actual color values using oklch.
  * All colors MUST use oklch format.
- *
- * To add a new semantic color:
- * 1. Add the variable to :root (light value) and .dark (dark value)
- * 2. Register it in @theme inline as --color-<name>: var(--<name>)
  */
 
 @theme inline {
@@ -111,48 +105,6 @@
   --ring: oklch(0.52 0.11 195);
 }
 
-.dark {
-  --background: oklch(0.14 0.02 260);
-  --foreground: oklch(0.95 0.01 230);
-  --card: oklch(0.19 0.022 260 / 0.92);
-  --card-foreground: oklch(0.95 0.01 230);
-  --popover: oklch(0.19 0.022 260);
-  --popover-foreground: oklch(0.95 0.01 230);
-  --primary: oklch(0.68 0.12 195);
-  --primary-foreground: oklch(0.14 0.03 260);
-  --link: oklch(0.75 0.11 195);
-  --rating: oklch(0.78 0.13 82);
-  --secondary: oklch(0.24 0.03 260);
-  --secondary-foreground: oklch(0.95 0.01 230);
-  --muted: oklch(0.23 0.025 260);
-  --muted-foreground: oklch(0.72 0.02 240);
-  --accent: oklch(0.28 0.04 235);
-  --accent-foreground: oklch(0.95 0.01 230);
-  --destructive: oklch(0.68 0.17 27);
-  --destructive-foreground: oklch(0.18 0.02 27);
-  --sale: oklch(0.7 0.16 18);
-  --sale-foreground: oklch(0.18 0.02 20);
-  --success: oklch(0.76 0.14 155);
-  --success-surface: oklch(0.25 0.05 155);
-  --warning: oklch(0.8 0.12 75);
-  --warning-surface: oklch(0.27 0.05 70);
-  --info: oklch(0.76 0.12 260);
-  --info-surface: oklch(0.26 0.05 260);
-  --gold: oklch(0.78 0.11 82);
-  --gold-foreground: oklch(0.2 0.03 60);
-  --surface: oklch(0.18 0.02 260);
-  --concern-tile-top: oklch(0.52 0.09 200);
-  --concern-tile-bottom: oklch(0.42 0.1 195);
-  --band: oklch(0.25 0.07 265);
-  --band-foreground: oklch(0.96 0.01 230);
-  --band-accent: oklch(0.68 0.09 195);
-  --band-accent-foreground: oklch(0.16 0.04 265);
-
-  --border: oklch(1 0 0 / 14%);
-  --input: oklch(1 0 0 / 18%);
-  --ring: oklch(0.72 0.09 200);
-}
-
 @layer base {
   * {
     border-color: var(--color-border);
@@ -199,6 +151,30 @@
   h3 {
     font-family: var(--font-display);
     font-optical-sizing: auto;
+  }
+
+  /* Interactive Elements Cursor Pointer & Micro-Hover Physics */
+  a,
+  button,
+  [role="button"],
+  input[type="submit"],
+  input[type="button"],
+  input[type="reset"],
+  input[type="checkbox"],
+  input[type="radio"],
+  select,
+  summary,
+  label[for],
+  .cursor-pointer {
+    cursor: pointer;
+  }
+
+  /* Smooth tactile button press micro-interaction */
+  button:not(:disabled):active,
+  a:active,
+  [role="button"]:not([aria-disabled="true"]):active {
+    transform: scale(0.975);
+    transition: transform 0.1s ease;
   }
 }
 
@@ -286,3 +262,181 @@
 @utility hex-photo {
   clip-path: polygon(50% 0%, 93% 25%, 100% 70%, 72% 97%, 28% 100%, 3% 72%, 0% 28%);
 }
+
+/* ==========================================================================
+   DYNAMIC ICON HOVER ANIMATIONS & MICRO-INTERACTIONS
+   ========================================================================== */
+
+/* Universal smooth icon transitions */
+svg.lucide,
+.lucide,
+[data-lucide] {
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease, filter 0.2s ease;
+}
+
+/* General Icon Hover Reaction on Interactive Elements */
+button:hover svg.lucide,
+a:hover svg.lucide,
+[role="button"]:hover svg.lucide,
+label:hover svg.lucide,
+summary:hover svg.lucide,
+.group:hover svg.lucide {
+  transform: scale(1.15);
+}
+
+/* Shopping Bag / Cart Icon: energetic tilt and bounce */
+button:hover svg.lucide-shopping-bag,
+a:hover svg.lucide-shopping-bag,
+.group:hover svg.lucide-shopping-bag {
+  transform: scale(1.22) rotate(-8deg);
+  color: var(--color-primary);
+}
+
+/* Search Icon: focus / hover pulse & rotation */
+button:hover svg.lucide-search,
+a:hover svg.lucide-search,
+form:focus-within svg.lucide-search {
+  transform: scale(1.22) rotate(10deg);
+  color: var(--color-primary);
+}
+
+/* Phone Icon: realistic phone ring wobble animation */
+li:hover svg.lucide-phone,
+a:hover svg.lucide-phone,
+button:hover svg.lucide-phone {
+  animation: icon-wobble 0.5s ease-in-out;
+  color: var(--color-primary);
+}
+
+/* Map Pin Icon: buoyant jump and drop */
+li:hover svg.lucide-map-pin,
+a:hover svg.lucide-map-pin {
+  animation: icon-bounce 0.45s ease-in-out;
+  color: var(--color-primary);
+}
+
+/* Mail Icon: floating lift */
+li:hover svg.lucide-mail,
+a:hover svg.lucide-mail {
+  transform: translateY(-3px) scale(1.18);
+  color: var(--color-primary);
+}
+
+/* Clock Icon: clockwise tick spin */
+li:hover svg.lucide-clock {
+  transform: rotate(35deg) scale(1.18);
+  color: var(--color-primary);
+}
+
+/* User / Profile Icon */
+button:hover svg.lucide-user,
+a:hover svg.lucide-user {
+  transform: scale(1.2) translateY(-1.5px);
+  color: var(--color-primary);
+}
+
+/* Arrow & Chevron Icons: directional slide feedback */
+a:hover svg.lucide-chevron-right,
+button:hover svg.lucide-chevron-right,
+a:hover svg.lucide-arrow-right,
+button:hover svg.lucide-arrow-right,
+.group:hover svg.lucide-chevron-right,
+.group:hover svg.lucide-arrow-right {
+  transform: translateX(4px) scale(1.15);
+}
+
+a:hover svg.lucide-chevron-left,
+button:hover svg.lucide-chevron-left,
+a:hover svg.lucide-arrow-left,
+button:hover svg.lucide-arrow-left,
+.group:hover svg.lucide-chevron-left,
+.group:hover svg.lucide-arrow-left {
+  transform: translateX(-4px) scale(1.15);
+}
+
+/* Sparkles, Stars, Heart: pulse sparkle */
+button:hover svg.lucide-star,
+a:hover svg.lucide-star,
+button:hover svg.lucide-sparkles,
+a:hover svg.lucide-sparkles,
+button:hover svg.lucide-heart,
+a:hover svg.lucide-heart {
+  animation: icon-heartbeat 0.4s ease-in-out;
+  color: var(--color-primary);
+}
+
+/* Trust Badges & Scallop hover */
+li:hover .badge-scallop {
+  transform: scale(1.12) rotate(6deg);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+li:hover svg.lucide-shield-check,
+li:hover svg.lucide-truck,
+li:hover svg.lucide-lock,
+li:hover svg.lucide-headphones {
+  transform: scale(1.25);
+  color: var(--color-band-accent-foreground);
+}
+
+/* Keyframes */
+@keyframes icon-wobble {
+  0%, 100% { transform: scale(1.18) rotate(0deg); }
+  20% { transform: scale(1.22) rotate(-16deg); }
+  40% { transform: scale(1.22) rotate(16deg); }
+  60% { transform: scale(1.2) rotate(-10deg); }
+  80% { transform: scale(1.2) rotate(10deg); }
+}
+
+@keyframes icon-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-5px) scale(1.2); }
+  70% { transform: translateY(1px) scale(1.1); }
+}
+
+@keyframes icon-heartbeat {
+  0%, 100% { transform: scale(1.15); }
+  50% { transform: scale(1.35); }
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    margin: 1.2cm;
+    size: auto;
+  }
+
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide navigation, header, footer, toast notifications, interactive buttons */
+  header,
+  footer,
+  nav,
+  .no-print,
+  [data-sonner-toaster],
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Ensure printable receipt is visible and nicely styled */
+  .printable-receipt-container {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+}
+
+

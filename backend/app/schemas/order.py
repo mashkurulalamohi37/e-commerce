@@ -1,3 +1,4 @@
+import re
 from typing import Literal, Optional, List
 from uuid import UUID
 from datetime import datetime
@@ -51,6 +52,7 @@ class OrderCreate(BaseModel):
 
     customer_name: SafeText = Field(min_length=2, max_length=120)
     phone: BdPhone
+    email: Optional[str] = Field(default=None, max_length=255)
     address: SafeText = Field(min_length=5, max_length=400)
     city: SafeText = Field(default="Dhaka", min_length=2, max_length=80)
     delivery_zone: DeliveryZone = "inside_dhaka"
@@ -75,12 +77,48 @@ class OrderStatusUpdate(BaseModel):
     payment_reference: Optional[SafeText] = Field(default=None, max_length=60)
 
 
+def mask_customer_name(name: str) -> str:
+    parts = name.strip().split()
+    if not parts:
+        return "Customer"
+    if len(parts) == 1:
+        p = parts[0]
+        return f"{p[:2]}***" if len(p) > 2 else f"{p}***"
+    return f"{parts[0]} {parts[1][0]}***"
+
+
+def mask_phone_number(phone: str) -> str:
+    clean = re.sub(r"\D", "", phone)
+    if len(clean) >= 7:
+        return f"{clean[:3]}****{clean[-4:]}"
+    return "****"
+
+
+def mask_email_address(email: Optional[str]) -> Optional[str]:
+    if not email or "@" not in email:
+        return None
+    user_part, domain = email.split("@", 1)
+    if len(user_part) <= 2:
+        masked_user = f"{user_part[0]}*"
+    else:
+        masked_user = f"{user_part[0]}***{user_part[-1]}"
+    return f"{masked_user}@{domain}"
+
+
+def mask_street_address(address: str, city: str) -> str:
+    parts = [p.strip() for p in address.split(",") if p.strip()]
+    if len(parts) > 1:
+        return f"{parts[-1]}, {city}"
+    return f"Area, {city}"
+
+
 class OrderResponse(BaseModel):
     id: UUID
     order_number: str
     user_id: Optional[UUID] = None
     customer_name: str
     phone: str
+    email: Optional[str] = None
     address: str
     city: str
     delivery_zone: str

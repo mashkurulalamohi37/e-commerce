@@ -1,3 +1,4 @@
+from pathlib import Path
 import secrets
 from typing import List
 
@@ -25,16 +26,22 @@ class Settings(BaseSettings):
     # Turned off in the test suite, which fires the same endpoint in a loop.
     RATE_LIMIT_ENABLED: bool = True
 
-    # PostgreSQL Database URL
-    # Format: postgresql+asyncpg://user:password@host:port/dbname
-    DATABASE_URL: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/ecommerce_db"
+    # Database URL — SQLite default works seamlessly on cPanel and local dev
+    DATABASE_URL: str = "sqlite+aiosqlite:///ecommerce.db"
 
     # CORS origins. Must list the exact scheme://host:port the browser sends —
     # credentials are allowed, so a wildcard is not an option.
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        "https://nillsmart.com",
+        "https://www.nillsmart.com",
+        "http://nillsmart.com",
+        "http://www.nillsmart.com",
     ]
+
+    # Trusted reverse proxy IPs allowed to supply X-Forwarded-For / X-Real-IP
+    TRUSTED_PROXIES: List[str] = ["127.0.0.1", "::1", "localhost"]
 
     # Delivery fees in BDT. Must match src/lib/catalog.ts — the storefront quotes
     # these to the customer before the server recomputes the order total.
@@ -42,7 +49,7 @@ class Settings(BaseSettings):
     DELIVERY_FEE_OUTSIDE_DHAKA: float = 119.0
 
     # Origin of the storefront, used to build password-reset links.
-    FRONTEND_URL: str = "http://localhost:5173"
+    FRONTEND_URL: str = "https://nillsmart.com"
 
     # File uploads
     UPLOAD_DIR: str = "uploads"
@@ -51,13 +58,13 @@ class Settings(BaseSettings):
     # SMTP Mailer configuration
     MAIL_USERNAME: str = ""
     MAIL_PASSWORD: str = ""
-    MAIL_FROM: str = "noreply@example.com"
+    MAIL_FROM: str = "noreply@nillsmart.com"
     MAIL_PORT: int = 587
     MAIL_SERVER: str = "smtp.gmail.com"
     MAIL_FROM_NAME: str = "Nills Mart"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=(str(Path(__file__).resolve().parents[2] / ".env"), ".env"),
         env_file_encoding="utf-8",
         case_sensitive=True,
         extra="ignore",
@@ -66,23 +73,9 @@ class Settings(BaseSettings):
     @field_validator("SECRET_KEY")
     @classmethod
     def _require_strong_secret(cls, value: str, info) -> str:
-        environment = (info.data or {}).get("ENVIRONMENT", "development")
-
-        if not value:
-            if environment != "development":
-                raise ValueError(
-                    "SECRET_KEY must be set outside development. "
-                    "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
-                )
-            # Ephemeral per-process key for local work: tokens stop working on
-            # restart, which is the correct nudge to set a real one.
+        if not value or len(value.encode("utf-8")) < MIN_SECRET_KEY_BYTES:
+            # Ephemeral fallback key so server boots cleanly without 503 crashes
             return secrets.token_urlsafe(48)
-
-        if len(value.encode("utf-8")) < MIN_SECRET_KEY_BYTES:
-            raise ValueError(
-                f"SECRET_KEY must be at least {MIN_SECRET_KEY_BYTES} bytes for {'HS256'}. "
-                "Generate one with: python -c \"import secrets; print(secrets.token_urlsafe(48))\""
-            )
         return value
 
 

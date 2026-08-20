@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { useCart } from "@/lib/cart";
+import { useAuth } from "@/lib/auth";
 import { ApiError } from "@/lib/api-client";
 import {
   payOrder,
@@ -40,14 +41,22 @@ export const Route = createFileRoute("/checkout")({
 });
 
 const BD_PHONE = /^01[3-9]\d{8}$/;
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-type FieldErrors = Partial<Record<"customerName" | "phone" | "address" | "city", string>>;
+type FieldErrors = Partial<Record<"customerName" | "phone" | "email" | "address" | "city", string>>;
 
 function Checkout() {
   const navigate = useNavigate();
   const { lines, subtotal, clear, loading } = useCart();
+  const { user } = useAuth();
 
-  const [form, setForm] = useState({ customerName: "", phone: "", address: "", city: "Dhaka" });
+  const [form, setForm] = useState({
+    customerName: "",
+    phone: "",
+    email: "",
+    address: "",
+    city: "Dhaka",
+  });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [zone, setZone] = useState<DeliveryZone>("inside_dhaka");
   const [method, setMethod] = useState<PaymentMethod>("bkash");
@@ -59,6 +68,16 @@ function Checkout() {
   // Identifies this checkout attempt to the API so a retry cannot become a
   // second order. Reset only once an order is successfully placed.
   const idempotencyKey = useRef(crypto.randomUUID());
+
+  useEffect(() => {
+    if (!user) return;
+    setForm((prev) => ({
+      ...prev,
+      customerName: prev.customerName || user.full_name || "",
+      phone: prev.phone || user.phone || "",
+      email: prev.email || user.email || "",
+    }));
+  }, [user]);
 
   const applyPromo = async () => {
     setCheckingPromo(true);
@@ -91,7 +110,10 @@ function Checkout() {
       next.customerName = "Enter the name the courier should ask for.";
     }
     if (!BD_PHONE.test(form.phone.trim())) {
-      next.phone = "Enter an 11-digit Bangladeshi mobile number, e.g. 01712345678.";
+      next.phone = "Enter an 11-digit Bangladeshi mobile number.";
+    }
+    if (form.email.trim() && !EMAIL_REGEX.test(form.email.trim())) {
+      next.email = "Enter a valid email address, or leave it blank.";
     }
     if (form.address.trim().length < 5) {
       next.address = "Add a house or road number so the courier can find you.";
@@ -144,6 +166,7 @@ function Checkout() {
       const order = await placeOrder(
         {
           ...form,
+          email: form.email.trim() || undefined,
           deliveryZone: zone,
           paymentMethod: method,
           promoCode: promoCode.trim() || undefined,
@@ -152,7 +175,7 @@ function Checkout() {
         idempotencyKey.current,
       );
 
-      rememberOrderPhone(order.order_number, form.phone);
+      rememberOrderPhone(order.order_number, form.phone, form.email);
 
       // Cash on delivery is not a payment: no gateway call, nothing marked paid.
       if (method === "cod") {
@@ -162,7 +185,14 @@ function Checkout() {
           order_number: order.order_number,
           payment_method: "cod",
         });
-        navigate({ to: "/order-confirmed", search: { order: order.order_number } });
+        navigate({
+          to: "/order-confirmed",
+          search: {
+            order: order.order_number,
+            phone: form.phone,
+            email: form.email.trim() || undefined,
+          },
+        });
         return;
       }
 
@@ -174,7 +204,14 @@ function Checkout() {
         order_number: paid.order_number,
         payment_method: method,
       });
-      navigate({ to: "/order-confirmed", search: { order: paid.order_number } });
+      navigate({
+        to: "/order-confirmed",
+        search: {
+          order: paid.order_number,
+          phone: form.phone,
+          email: form.email.trim() || undefined,
+        },
+      });
     } catch (err) {
       const error = err as ApiError;
       // 409 means someone else bought the last one between adding and paying.
@@ -247,9 +284,30 @@ function Checkout() {
             {...fieldProps("co-phone", errors.phone, "We text the delivery update to this number.")}
             inputMode="tel"
             autoComplete="tel"
-            placeholder="01712345678"
             value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          />
+        </FormField>
+
+        <FormField
+          id="co-email"
+          label="Email address"
+          error={errors.email}
+          hint="Optional — We'll email your order receipt & tracking updates. Delivery SMS is also sent to your mobile number."
+        >
+          <Input
+            {...fieldProps(
+              "co-email",
+              errors.email,
+              "Optional — We'll email your order receipt & tracking updates. Delivery SMS is also sent to your mobile number.",
+            )}
+            type="email"
+            inputMode="email"
+            autoComplete="email"
+            placeholder="you@example.com (optional)"
+            maxLength={255}
+            value={form.email}
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
           />
         </FormField>
 

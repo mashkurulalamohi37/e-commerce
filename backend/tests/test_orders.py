@@ -66,6 +66,20 @@ class TestValidation:
         r = await client.post("/api/v1/orders/", json=order_payload(product.id, items=[]))
         assert r.status_code == 400
 
+    async def test_order_with_optional_email_succeeds(self, client, product):
+        payload = order_payload(product.id, email="customer@example.com")
+        r = await client.post("/api/v1/orders/", json=payload)
+        assert r.status_code == 200, r.text
+        assert r.json()["email"] == "customer@example.com"
+
+    async def test_order_without_email_succeeds(self, client, product):
+        payload = order_payload(product.id)
+        payload["email"] = None
+        r = await client.post("/api/v1/orders/", json=payload)
+        assert r.status_code == 200, r.text
+        assert r.json()["email"] is None
+
+
 
 class TestPaymentStatus:
     async def test_cash_on_delivery_is_not_marked_paid(self, client, product):
@@ -238,7 +252,6 @@ class TestIdempotency:
 
 class TestTracking:
     async def test_tracking_requires_the_matching_phone(self, client, product):
-        """The order number alone is not a credential."""
         order = (await client.post("/api/v1/orders/", json=order_payload(product.id))).json()
 
         ok = await client.get(
@@ -246,12 +259,31 @@ class TestTracking:
             params={"order_number": order["order_number"], "phone": CUSTOMER_PHONE},
         )
         assert ok.status_code == 200
+        assert ok.json()["customer_name"] == "Test Buyer"  # Unmasked when verified
 
         wrong = await client.get(
             "/api/v1/orders/track",
             params={"order_number": order["order_number"], "phone": "01999999999"},
         )
         assert wrong.status_code == 404
+
+    async def test_tracking_without_contact_verification_masks_pii(self, client, product):
+        """When queried anonymously without phone/email, customer PII must be masked."""
+        payload = order_payload(product.id)
+        payload["email"] = "customer@example.com"
+        order = (await client.post("/api/v1/orders/", json=payload)).json()
+
+        res = await client.get(
+            "/api/v1/orders/track",
+            params={"order_number": order["order_number"]},
+        )
+        assert res.status_code == 200
+        data = res.json()
+        assert data["customer_name"] == "Test B***"  # Masked
+        assert data["phone"] == "017****5678"  # Masked
+        assert data["email"] == "c***r@example.com"  # Masked
+        assert "House" not in data["address"]  # Masked street address
+
 
     async def test_order_numbers_are_not_sequential(self, client, product):
         numbers = []

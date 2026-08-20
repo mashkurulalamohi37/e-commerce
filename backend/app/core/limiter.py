@@ -22,16 +22,23 @@ CONTENT_LIMIT = "10/hour"
 def _client_key(request) -> str:
     """Identify the caller for limiting purposes.
 
-    Behind a proxy the socket address is the proxy, so prefer the first hop in
-    X-Forwarded-For when one is present. This is only as trustworthy as the
-    proxy in front of it — with no proxy, a client can set the header freely,
-    so it is used only outside development where a proxy is expected.
+    Only trusts proxy headers (X-Real-IP / X-Forwarded-For) if the immediate connecting
+    client host matches trusted proxy addresses (e.g. reverse proxy / load balancer).
+    This prevents arbitrary header spoofing attacks.
     """
-    if settings.ENVIRONMENT != "development":
+    direct_ip = getattr(getattr(request, "client", None), "host", None) or get_remote_address(request)
+    
+    # Only inspect forwarding headers if connecting directly from a trusted proxy
+    if direct_ip in settings.TRUSTED_PROXIES:
+        real_ip = request.headers.get("x-real-ip")
+        if real_ip and real_ip.strip():
+            return real_ip.strip()
         forwarded = request.headers.get("x-forwarded-for")
         if forwarded:
-            return forwarded.split(",")[0].strip()
-    return get_remote_address(request)
+            parts = [p.strip() for p in forwarded.split(",") if p.strip()]
+            if parts:
+                return parts[0]  # First IP is the original client IP when proxy is trusted
+    return direct_ip
 
 
 limiter = Limiter(

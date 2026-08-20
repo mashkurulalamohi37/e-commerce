@@ -176,9 +176,7 @@ a browser will refuse the API calls otherwise.
 - [ ] Products render — if the grid is empty, the browser console will show a CORS or 404 error against the API
 - [ ] Place a test order end to end
 - [ ] `https://api.nillsmart.com/api/v1/products` returns JSON
-- [ ] **Log into `/admin` and change the default password immediately.** The
-      credentials `admin@nillsmart.com` / `admin12345` are published in
-      [README.md](README.md), which means they are public.
+- [ ] **Log into `/admin` and record or update the admin credentials.** If you created the admin via `scripts/create_admin_auto.py`, the strong random password printed to the terminal during setup should be changed upon first login. Alternatively, use `scripts/create_admin.py` to set a custom password interactively.
 - [ ] Enable Two-Factor Authentication on the Namecheap account itself — the
       dashboard currently shows it **OFF**, and that account controls the domain.
 

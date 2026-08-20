@@ -58,9 +58,147 @@ export function toBanner(row: ApiBanner): Banner {
   };
 }
 
+export const FALLBACK_BANNERS: Banner[] = [
+  {
+    id: "hero-1",
+    placement: "hero",
+    kicker: "Italian Dermatological Care",
+    title: "Galenia & Sebotic",
+    subtitle: "Physiological & Anti-Dandruff Scalp Solutions",
+    ctaLabel: "Shop Now",
+    ctaHref: "/category/hair-care",
+    imageUrl: "/banners/hero-sebotic-galenia.jpg",
+    alt: "Galenia and Sebotic Scalp Care",
+    tone: "dark",
+    active: true,
+    sortOrder: 1,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "hero-2",
+    placement: "hero",
+    kicker: "Dry & Sensitive Skin Solutions",
+    title: "Lipiol Derm Care",
+    subtitle: "Intense Hydration & Barrier Repair",
+    ctaLabel: "Explore Range",
+    ctaHref: "/category/skin-care",
+    imageUrl: "/banners/hero-lipiol-collection.jpg",
+    alt: "Lipiol Skincare Range",
+    tone: "light",
+    active: true,
+    sortOrder: 2,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "hero-3",
+    placement: "hero",
+    kicker: "Advanced Radiance & Hydration",
+    title: "Swiss Formula",
+    subtitle: "Hyaluronic Acid & Active Face/Hair Serums",
+    ctaLabel: "Discover Now",
+    ctaHref: "/category/skin-care",
+    imageUrl: "/banners/hero-swiss-formula.jpg",
+    alt: "Swiss Formula Serums",
+    tone: "dark",
+    active: true,
+    sortOrder: 3,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "hero-4",
+    placement: "hero",
+    kicker: "Maximum UV Defense · SPF 50+",
+    title: "Protelion 50",
+    subtitle: "Elevated UVB + UVA Solar Protection",
+    ctaLabel: "Shop Suncare",
+    ctaHref: "/category/skin-care",
+    imageUrl: "/banners/hero-protelion-sunscreen.jpg",
+    alt: "Protelion 50 Sun Protection",
+    tone: "dark",
+    active: true,
+    sortOrder: 4,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "offer-1",
+    placement: "offer",
+    kicker: "Special Offer",
+    title: "Sebotic Anti-Dandruff Duo",
+    subtitle: "Complete scalp care pack with physiological shampoo",
+    ctaLabel: "View Deal",
+    ctaHref: "/offers",
+    imageUrl: "/banners/offer-1.jpg",
+    alt: "Sebotic Anti-Dandruff Duo",
+    tone: "dark",
+    active: true,
+    sortOrder: 1,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "offer-2",
+    placement: "offer",
+    kicker: "Limited Deal",
+    title: "Lipiol Hydration Trio",
+    subtitle: "Intensive cleansing cream and barrier repair face emulsion",
+    ctaLabel: "Shop Pack",
+    ctaHref: "/offers",
+    imageUrl: "/banners/offer-2.jpg",
+    alt: "Lipiol Hydration Trio",
+    tone: "light",
+    active: true,
+    sortOrder: 2,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "offer-3",
+    placement: "offer",
+    kicker: "Exclusive",
+    title: "Swiss Formula Serum Glow Set",
+    subtitle: "Vitamin C face serum with pure hair nourishment oil",
+    ctaLabel: "Grab Offer",
+    ctaHref: "/offers",
+    imageUrl: "/banners/offer-3.jpg",
+    alt: "Swiss Formula Serum Glow Set",
+    tone: "dark",
+    active: true,
+    sortOrder: 3,
+    startsAt: null,
+    endsAt: null,
+  },
+  {
+    id: "offer-4",
+    placement: "offer",
+    kicker: "Sun Care",
+    title: "Protelion 50 & Keralise Duo",
+    subtitle: "Complete acne-safe facial scrub with high SPF protection",
+    ctaLabel: "Buy Now",
+    ctaHref: "/offers",
+    imageUrl: "/banners/offer-4.jpg",
+    alt: "Protelion 50 & Keralise Duo",
+    tone: "dark",
+    active: true,
+    sortOrder: 4,
+    startsAt: null,
+    endsAt: null,
+  },
+];
+
 async function fetchPublicBanners(): Promise<Banner[]> {
-  const rows = await apiFetch<ApiBanner[]>("/banners/", { anonymous: true });
-  return rows.map(toBanner);
+  try {
+    const rows = await apiFetch<ApiBanner[]>("/banners/", { anonymous: true });
+    if (rows && rows.length > 0) {
+      return rows.map(toBanner);
+    }
+  } catch (err) {
+    console.warn("API banners fetch failed, using fallback banners:", err);
+  }
+  return FALLBACK_BANNERS;
 }
 
 export const bannersQueryOptions = queryOptions({

@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ShieldCheck, Truck, Lock, Headphones } from "lucide-react";
+import { ShieldCheck, Truck, Lock, Headphones, ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { HeroCarousel } from "@/components/storefront/HeroCarousel";
 import { OfferTiles } from "@/components/storefront/OfferTiles";
@@ -62,7 +62,7 @@ export const Route = createFileRoute("/")({
 
 function SectionHeader({ kicker, title, to }: { kicker?: string; title: string; to?: string }) {
   return (
-    <div className="mb-4 flex flex-col items-center justify-between gap-1 px-4 text-center sm:mb-6 sm:flex-row sm:text-left">
+    <div className="mb-4 flex flex-col items-center justify-between gap-2 px-4 text-center sm:mb-6 sm:flex-row sm:text-left">
       <div>
         {kicker && (
           <span className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-link">
@@ -76,9 +76,11 @@ function SectionHeader({ kicker, title, to }: { kicker?: string; title: string; 
       {to && (
         <Link
           to={to}
-          className="inline-flex items-center gap-1 text-xs font-bold uppercase tracking-wider text-link transition-colors hover:text-foreground"
+          preload="intent"
+          className="group inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-card/60 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-link backdrop-blur-sm transition-all duration-300 hover:border-link/50 hover:bg-link/10 hover:text-link hover:shadow-sm active:scale-95"
         >
-          View all →
+          <span>View all</span>
+          <ArrowRight className="size-3.5 transition-transform duration-300 ease-out group-hover:translate-x-1" />
         </Link>
       )}
     </div>
@@ -100,9 +102,7 @@ function Home() {
 
       {/* Hero Carousel Banner Container */}
       <div className="px-3 sm:px-6">
-        <div className="overflow-hidden rounded-3xl border border-border/60 bg-card/60 shadow-lift backdrop-blur-md">
-          <HeroCarousel slides={heroSlides} />
-        </div>
+        <HeroCarousel slides={heroSlides} />
       </div>
 
       {/* Quick Trust Highlights Feature Bar */}

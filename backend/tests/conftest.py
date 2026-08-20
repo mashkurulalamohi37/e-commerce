@@ -31,12 +31,19 @@ from asgi_lifespan import LifespanManager  # noqa: E402
 from httpx import ASGITransport, AsyncClient  # noqa: E402
 
 from app.core import security  # noqa: E402
-from app.db.session import AsyncSessionLocal  # noqa: E402
+from app.db.base import Base  # noqa: E402
+from app.db.session import AsyncSessionLocal, engine  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models.product import Product  # noqa: E402
 from app.models.user import User  # noqa: E402
 
 CUSTOMER_PHONE = "01712345678"
+
+
+@pytest_asyncio.fixture(autouse=True)
+async def init_test_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
 @pytest_asyncio.fixture

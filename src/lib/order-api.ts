@@ -18,6 +18,7 @@ export type OrderRecord = {
   user_id: string | null;
   customer_name: string;
   phone: string;
+  email: string | null;
   address: string;
   city: string;
   delivery_zone: string;
@@ -37,6 +38,7 @@ export type OrderRecord = {
 export type PlaceOrderInput = {
   customerName: string;
   phone: string;
+  email?: string;
   address: string;
   city: string;
   deliveryZone: DeliveryZone;
@@ -60,6 +62,7 @@ export function placeOrder(input: PlaceOrderInput, idempotencyKey?: string): Pro
     body: JSON.stringify({
       customer_name: input.customerName.trim(),
       phone: input.phone.trim(),
+      email: input.email ? input.email.trim() : null,
       address: input.address.trim(),
       city: input.city.trim(),
       delivery_zone: input.deliveryZone,
@@ -110,11 +113,24 @@ export function validatePromo(code: string, subtotal: number): Promise<Validated
   });
 }
 
-/** Order lookup needs both the number and the phone it was placed with. */
-export function trackOrder(orderNumber: string, phone: string): Promise<OrderRecord> {
+/** Order lookup accepts order number with phone, email, or logged in user verification. */
+export function trackOrder(
+  orderNumber: string,
+  identifier?: string | { phone?: string; email?: string },
+): Promise<OrderRecord> {
   const params = new URLSearchParams({
     order_number: orderNumber.trim().toUpperCase(),
-    phone: phone.trim(),
   });
-  return apiFetch<OrderRecord>(`/orders/track?${params.toString()}`, { anonymous: true });
+  if (typeof identifier === "string") {
+    if (identifier.includes("@")) {
+      params.set("email", identifier.trim());
+    } else {
+      params.set("phone", identifier.trim());
+    }
+  } else if (identifier) {
+    if (identifier.phone?.trim()) params.set("phone", identifier.phone.trim());
+    if (identifier.email?.trim()) params.set("email", identifier.email.trim());
+  }
+  return apiFetch<OrderRecord>(`/orders/track?${params.toString()}`);
 }
+

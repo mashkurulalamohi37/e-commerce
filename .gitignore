@@ -35,6 +35,8 @@ nills_mart-cpanel.zip
 # into the same directory, so test artifacts were being committed too.
 backend/uploads/*
 !backend/uploads/.gitkeep
+uploads/*
+!uploads/.gitkeep
 
 # Python & SQLite
 __pycache__/

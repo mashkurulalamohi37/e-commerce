@@ -40,11 +40,14 @@
 
 <IfModule mod_headers.c>
   # Vite fingerprints everything it emits into /assets/, so those URLs can be
-  # cached forever. The pattern deliberately requires a content hash: files
-  # copied straight from public/ (logo, favicons, catalog images) keep their
-  # names across deploys and must stay revalidatable.
+  # cached forever.
   <FilesMatch "-[A-Za-z0-9_-]{8,}\.(js|mjs|css|woff2?)$">
     Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+
+  # Images and static media (catalog photos, banners, favicons, logos)
+  <FilesMatch "\.(png|jpe?g|webp|svg|gif|ico|avif)$">
+    Header set Cache-Control "public, max-age=2592000, stale-while-revalidate=86400"
   </FilesMatch>
 
   # The shell references the hashed bundles by name. Cache it and a deploy
@@ -54,7 +57,21 @@
   </FilesMatch>
 
   Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "DENY"
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=()"
+</IfModule>
+
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
 </IfModule>
 
 <IfModule mod_deflate.c>
