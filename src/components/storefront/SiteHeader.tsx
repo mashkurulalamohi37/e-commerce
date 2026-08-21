@@ -293,45 +293,61 @@ export function SiteHeader() {
         >
           <div className="mx-auto flex max-w-7xl items-stretch gap-1 px-4 sm:px-6 lg:px-8">
             {MENU.map((c) => (
-              <div key={c.slug} className="relative" onMouseEnter={() => setOpenGroup(c.slug)}>
+              <div
+                key={c.slug}
+                className="relative"
+                onMouseEnter={() => setOpenGroup(c.slug)}
+              >
                 <Link
                   to="/category/$slug"
                   params={{ slug: c.slug }}
                   aria-expanded={openGroup === c.slug}
-                  className="flex items-center gap-1.5 px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wider text-emerald-50/90 transition-all duration-200 hover:bg-white/10 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400"
+                  className={`flex items-center gap-1.5 px-3.5 py-2.5 text-[12.5px] font-bold uppercase tracking-wider transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-400 ${
+                    openGroup === c.slug
+                      ? "bg-white/20 text-white"
+                      : "text-emerald-50/90 hover:bg-white/10 hover:text-white"
+                  }`}
                 >
                   {c.name}
-                  <ChevronDown className="size-3.5 opacity-70" />
+                  <ChevronDown
+                    className={`size-3.5 opacity-75 transition-transform duration-200 ${
+                      openGroup === c.slug ? "rotate-180 text-white" : ""
+                    }`}
+                  />
                 </Link>
 
                 {openGroup === c.slug && (
-                  <div className="absolute left-0 top-full z-50 w-64 rounded-b-xl border border-border bg-card p-4 text-foreground shadow-2xl backdrop-blur-md">
-                    <p className="mb-2 text-[11px] font-extrabold uppercase tracking-[0.18em] text-primary">
-                      {c.name}
-                    </p>
-                    <ul className="space-y-1.5">
+                  <div className="absolute left-0 top-full z-50 w-64 rounded-b-xl border border-emerald-900/60 bg-[#0a2328] p-3 text-white shadow-2xl ring-1 ring-black/40">
+                    <div className="border-b border-white/15 pb-2 px-2.5 mb-1.5">
+                      <p className="text-[11px] font-black uppercase tracking-widest text-emerald-400">
+                        {c.name}
+                      </p>
+                    </div>
+                    <ul className="space-y-0.5">
                       {c.children.map((child) => (
                         <li key={child}>
                           <Link
                             to="/category/$slug"
                             params={{ slug: c.slug }}
                             search={{ sub: child }}
-                            className="block rounded px-2 py-1 text-xs font-medium text-foreground/85 transition-colors hover:bg-muted hover:text-primary"
+                            className="flex items-center rounded-lg px-2.5 py-2 text-xs font-semibold text-white/90 transition-colors duration-150 hover:bg-white/10 hover:text-emerald-300"
                           >
                             {child}
                           </Link>
                         </li>
                       ))}
                     </ul>
-                    <Link
-                      to="/category/$slug"
-                      params={{ slug: c.slug }}
-                      preload="intent"
-                      className="group mt-3 inline-flex items-center gap-1 text-xs font-bold text-primary transition-colors hover:text-primary/80"
-                    >
-                      <span>View all {c.name}</span>
-                      <ArrowRight className="size-3 transition-transform duration-200 ease-out group-hover:translate-x-1" />
-                    </Link>
+                    <div className="mt-2 border-t border-white/15 pt-1.5">
+                      <Link
+                        to="/category/$slug"
+                        params={{ slug: c.slug }}
+                        preload="intent"
+                        className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs font-bold text-emerald-400 transition-colors duration-150 hover:bg-white/10 hover:text-white"
+                      >
+                        <span>View all {c.name}</span>
+                        <ArrowRight className="size-3.5" />
+                      </Link>
+                    </div>
                   </div>
                 )}
               </div>

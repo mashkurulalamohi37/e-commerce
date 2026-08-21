@@ -157,22 +157,22 @@ export function HeroCarousel({ slides }: { slides: Banner[] }) {
             type="button"
             aria-label="Previous slide"
             onClick={() => embla?.scrollPrev()}
-            className="absolute top-1/2 left-3 sm:left-5 -translate-y-1/2 flex size-11 sm:size-12 items-center justify-center rounded-full bg-black/40 text-white border border-white/20 shadow-2xl backdrop-blur-md transition-all duration-200 hover:bg-black/75 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary opacity-80 hover:opacity-100"
+            className="absolute top-1/2 left-2 sm:left-3.5 -translate-y-1/2 flex size-7 sm:size-8 items-center justify-center rounded-full bg-black/40 text-white border border-white/20 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary opacity-75 hover:opacity-100"
           >
-            <ChevronLeft className="size-5 sm:size-6" />
+            <ChevronLeft className="size-4 sm:size-4.5" />
           </button>
           <button
             type="button"
             aria-label="Next slide"
             onClick={() => embla?.scrollNext()}
-            className="absolute top-1/2 right-3 sm:right-5 -translate-y-1/2 flex size-11 sm:size-12 items-center justify-center rounded-full bg-black/40 text-white border border-white/20 shadow-2xl backdrop-blur-md transition-all duration-200 hover:bg-black/75 hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary opacity-80 hover:opacity-100"
+            className="absolute top-1/2 right-2 sm:right-3.5 -translate-y-1/2 flex size-7 sm:size-8 items-center justify-center rounded-full bg-black/40 text-white border border-white/20 shadow-md backdrop-blur-sm transition-all duration-200 hover:bg-black/70 hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary opacity-75 hover:opacity-100"
           >
-            <ChevronRight className="size-5 sm:size-6" />
+            <ChevronRight className="size-4 sm:size-4.5" />
           </button>
 
           {/* Dots Pagination Indicator */}
-          <div className="absolute inset-x-0 bottom-4 sm:bottom-5 flex justify-center z-20">
-            <div className="flex items-center gap-1.5 rounded-full bg-black/50 px-3.5 py-1.5 backdrop-blur-md border border-white/10 shadow-lg">
+          <div className="absolute inset-x-0 bottom-3 sm:bottom-4 flex justify-center z-20">
+            <div className="flex items-center gap-1.5 rounded-full bg-black/50 px-2.5 py-1 backdrop-blur-md border border-white/10 shadow-md">
               {slides.map((slide, i) => (
                 <button
                   key={slide.id}
@@ -180,14 +180,14 @@ export function HeroCarousel({ slides }: { slides: Banner[] }) {
                   aria-label={`Go to slide ${i + 1} of ${slides.length}`}
                   aria-current={i === selected ? "true" : undefined}
                   onClick={() => embla?.scrollTo(i)}
-                  className="grid size-6 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  className="grid size-4 place-items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
                 >
                   <span
                     className={cn(
-                      "block h-2 rounded-full transition-all duration-300",
+                      "block h-1.5 rounded-full transition-all duration-300",
                       i === selected
-                        ? "w-7 bg-primary shadow-sm shadow-primary/50"
-                        : "w-2 bg-white/40 hover:bg-white/70",
+                        ? "w-5 bg-primary shadow-xs shadow-primary/50"
+                        : "w-1.5 bg-white/40 hover:bg-white/70",
                     )}
                   />
                 </button>

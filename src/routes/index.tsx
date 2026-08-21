@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { ShieldCheck, Truck, Lock, Headphones, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { ProductCard } from "@/components/storefront/ProductCard";
 import { HeroCarousel } from "@/components/storefront/HeroCarousel";
 import { OfferTiles } from "@/components/storefront/OfferTiles";
@@ -103,48 +103,6 @@ function Home() {
       {/* Hero Carousel Banner Container */}
       <div className="px-3 sm:px-6">
         <HeroCarousel slides={heroSlides} />
-      </div>
-
-      {/* Quick Trust Highlights Feature Bar */}
-      <div className="px-3 sm:px-6">
-        <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border/60 bg-card/80 p-4 shadow-card backdrop-blur-sm sm:grid-cols-4 sm:gap-4 sm:p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-              <ShieldCheck className="size-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground sm:text-sm">100% Authentic</p>
-              <p className="text-[11px] text-muted-foreground">Directly imported brands</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-              <Truck className="size-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground sm:text-sm">Fast BD Shipping</p>
-              <p className="text-[11px] text-muted-foreground">৳79 Dhaka delivery</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-              <Lock className="size-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground sm:text-sm">Secure Payment</p>
-              <p className="text-[11px] text-muted-foreground">bKash, Card & Cash</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 shrink-0 place-items-center rounded-xl bg-primary/15 text-primary">
-              <Headphones className="size-5" />
-            </div>
-            <div>
-              <p className="text-xs font-bold text-foreground sm:text-sm">Dedicated Support</p>
-              <p className="text-[11px] text-muted-foreground">7 days customer care</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Deals Section */}

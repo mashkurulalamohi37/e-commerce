@@ -9,6 +9,7 @@
     "build": "npm run typecheck && vite build",
     "build:dev": "vite build --mode development",
     "build:cpanel": "vite build --mode cpanel",
+    "package:cpanel": "npm run build:cpanel && python package_cpanel.py",
     "preview": "vite preview",
     "start": "node dist/server/server.js",
     "lint": "eslint .",
